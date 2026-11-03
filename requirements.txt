@@ -1,5 +1,7 @@
 fastapi>=0.115,<1
 httpx>=0.28,<1
+langchain-core>=1.0,<2
+langchain-groq>=1.0,<2
 pydantic>=2.12,<3
 python-dotenv>=1.0,<2
 tzdata>=2025.1
