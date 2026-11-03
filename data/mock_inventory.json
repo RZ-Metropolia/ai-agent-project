@@ -1,0 +1,24 @@
+{
+  "items": [
+    {"item_id": 1, "name": "Margherita Pizza", "portions": 8},
+    {"item_id": 2, "name": "Mushroom Risotto", "portions": 0},
+    {"item_id": 3, "name": "Vegan Thai Curry", "portions": 6},
+    {"item_id": 4, "name": "Falafel Wrap", "portions": 5},
+    {"item_id": 5, "name": "Grilled Salmon", "portions": 6},
+    {"item_id": 6, "name": "Quinoa Bowl", "portions": 4},
+    {"item_id": 7, "name": "Beef Burger", "portions": 7},
+    {"item_id": 8, "name": "Chicken Caesar Salad", "portions": 5},
+    {"item_id": 9, "name": "Spinach Lasagne", "portions": 3},
+    {"item_id": 10, "name": "Tomato Soup", "portions": 10},
+    {"item_id": 11, "name": "Garlic Bread", "portions": 9},
+    {"item_id": 12, "name": "Caprese Salad", "portions": 6},
+    {"item_id": 13, "name": "Berry Sorbet", "portions": 8},
+    {"item_id": 14, "name": "Vanilla Ice Cream", "portions": 10},
+    {"item_id": 15, "name": "Chocolate Brownie", "portions": 5},
+    {"item_id": 16, "name": "Tiramisu", "portions": 4},
+    {"item_id": 17, "name": "Lemonade", "portions": 20},
+    {"item_id": 18, "name": "Still Water", "portions": 30},
+    {"item_id": 19, "name": "Iced Tea", "portions": 15},
+    {"item_id": 20, "name": "Mango Lassi", "portions": 8}
+  ]
+}
