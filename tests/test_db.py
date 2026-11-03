@@ -9,6 +9,7 @@ import tempfile
 import unittest
 from contextlib import closing
 from pathlib import Path
+from unittest.mock import patch
 
 from src.db import DATA_DIR, SEED_PATH, connect, init_db
 
@@ -168,6 +169,17 @@ class InitDbTests(DatabaseTestCase):
 
         with closing(connect(self.db_path)) as conn:
             self.assertEqual(conn.execute("SELECT COUNT(*) FROM draft_orders").fetchone()[0], 1)
+
+    def test_locked_database_gives_a_clear_error_and_stays_unchanged(self):
+        self.insert_draft()
+        self.conn.commit()
+
+        with patch("src.db.os.replace", side_effect=PermissionError):
+            with self.assertRaisesRegex(RuntimeError, "Close any program"):
+                init_db(self.db_path)
+
+        self.assertEqual(self.count("draft_orders"), 1)
+        self.assertFalse(self.db_path.with_name(f"{self.db_path.name}.tmp").exists())
 
     def test_connect_does_not_create_a_missing_database(self):
         missing = self.tmp_path / "missing.db"

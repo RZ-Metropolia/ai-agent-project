@@ -93,7 +93,13 @@ def init_db(db_path=DB_PATH, seed_path=SEED_PATH):
             conn.executescript(schema)
             with conn:
                 _insert_seed(conn, seed)
-        os.replace(tmp_path, db_path)
+        try:
+            os.replace(tmp_path, db_path)
+        except PermissionError as exc:
+            raise RuntimeError(
+                f"Cannot replace {db_path}. Close any program that has it open, such as"
+                " DB Browser for SQLite, and try again."
+            ) from exc
     finally:
         tmp_path.unlink(missing_ok=True)
     return db_path
