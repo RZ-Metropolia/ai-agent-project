@@ -43,7 +43,13 @@ class ScriptedModel:
 
     def invoke(self, messages):
         self.calls += 1
-        return self.replies.pop(0)
+        reply = self.replies.pop(0)
+        if isinstance(reply, Exception):  # A scripted model error.
+            raise reply
+        return reply
+
+
+GARBLED_CALL = Exception("Error code: 400 - {'error': {'code': 'tool_use_failed'}}")
 
 
 class AgentTestCase(unittest.TestCase):
@@ -153,6 +159,22 @@ class AgentLoopTests(AgentTestCase):
         result = run_agent(BrokenModel(), self.ctx, self.tools, "menu")
         self.assertEqual(result.stop_reason, "model_error")
         self.assertIn("no network", result.answer)
+
+    def test_garbled_tool_call_is_tried_again(self):
+        model = ScriptedModel(GARBLED_CALL, answer("Hello."))
+        result = run_agent(model, self.ctx, self.tools, "Hi")
+        self.assertEqual((result.answer, result.retries, model.calls), ("Hello.", 1, 2))
+
+    def test_garbled_tool_calls_stop_after_the_retries(self):
+        model = ScriptedModel(*[GARBLED_CALL] * (agent.MODEL_RETRIES + 1))
+        result = run_agent(model, self.ctx, self.tools, "Hi")
+        self.assertEqual(result.stop_reason, "model_error")
+        self.assertEqual(result.retries, agent.MODEL_RETRIES)
+
+    def test_other_model_errors_are_not_tried_again(self):
+        model = ScriptedModel(ConnectionError("no network"), answer("Hello."))
+        result = run_agent(model, self.ctx, self.tools, "Hi")
+        self.assertEqual((result.stop_reason, model.calls), ("model_error", 1))
 
     def test_history_is_kept_between_turns(self):
         first = run_agent(ScriptedModel(answer("Hello.")), self.ctx, self.tools, "Hi")

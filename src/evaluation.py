@@ -232,6 +232,7 @@ def run_scenario(model, scenario, inventory_url):
         "result": grade(checks),
         "answer": outcome.answer,
         "stop_reason": result.stop_reason,
+        "model_retries": result.retries,
         "tools": outcome.tools,
         "drafts": outcome.drafts,
         "checks": [{"check": n, "critical": c, "passed": p} for n, c, p in checks],
@@ -249,6 +250,7 @@ def run_evaluation(model, mode, runs=1, scenarios=SCENARIOS, save=True):
                 results.append(row)
                 failed = [c["check"] for c in row["checks"] if not c["passed"]]
                 print(f"run {run} {row['id']}: {row['result']:<7} tools={row['tools']}"
+                      + (f" retries={row['model_retries']}" if row["model_retries"] else "")
                       + (f" failed={failed}" if failed else ""))
 
     if save:

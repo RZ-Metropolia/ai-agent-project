@@ -20,6 +20,7 @@
 - **Draft check:** We read the stored draft back from SQLite. Its subtotal must equal the sum of the database prices, and every item must pass the requested rules.
 - **Safe handling:** In failure scenarios, no new draft row may exist, and the answer must state the reason.
 - **Runner:** `python -m src.evaluation --mode groq --runs 2` (or the Colab notebook) runs the scenarios and does these checks automatically. The checks for each scenario are in `src/evaluation.py`, and each check is marked critical or non-critical. The answer checks only look for key words, so a person reads each answer before recording the result. The answers, checks, and tool traces are saved in `docs/eval_results/`.
+- **Retries:** Groq refuses a tool call with a misspelled tool name (HTTP 400 `tool_use_failed`). The loop then asks the model again, up to 2 times. The result files record the number of retries as `model_retries`.
 - **Local runs:** local mode uses greedy decoding (no sampling), so it gives the same output each time. One run per scenario is enough there.
 
 **Result rule:**
