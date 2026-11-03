@@ -10,7 +10,7 @@
 | Database version            | `[Seed file version or commit]`, fresh database for each evaluation run |
 | API state                   | Normal stock from `mock_inventory.json`; outage switch on only for E-06 |
 | Fixed conditions            | Service day fixed to Friday; temperature 0; pickup hours 11:00–21:00    |
-| Number of runs per scenario | 3                                                                       |
+| Number of runs per scenario | 2                                                                       |
 
 ## How we checked correctness
 
@@ -19,7 +19,7 @@
 - **Grounded facts:** We compare prices, ingredients, allergens, and stock in the answer with a direct SQL query and with the API response.
 - **Draft check:** We read the stored draft back from SQLite. Its subtotal must equal the sum of the database prices, and every item must pass the requested rules.
 - **Safe handling:** In failure scenarios, no new draft row may exist, and the answer must state the reason.
-- **Runner:** `python -m src.evaluation --mode groq --runs 3` (or the Colab notebook) runs the scenarios and does these checks automatically. The checks for each scenario are in `src/evaluation.py`, and each check is marked critical or non-critical. The answer checks only look for key words, so a person reads each answer before recording the result. The answers, checks, and tool traces are saved in `docs/eval_results/`.
+- **Runner:** `python -m src.evaluation --mode groq --runs 2` (or the Colab notebook) runs the scenarios and does these checks automatically. The checks for each scenario are in `src/evaluation.py`, and each check is marked critical or non-critical. The answer checks only look for key words, so a person reads each answer before recording the result. The answers, checks, and tool traces are saved in `docs/eval_results/`.
 - **Local runs:** local mode uses greedy decoding (no sampling), so it gives the same output each time. One run per scenario is enough there.
 
 **Result rule:**
@@ -56,16 +56,16 @@
 
 ## Variation between runs (Groq)
 
-| ID | Run 1 | Run 2 | Run 3 | Observation |
-| --- | --- | --- | --- | --- |
-| E-01 | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| E-02 | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| E-03 | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| E-04 | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| E-05 | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| E-06 | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| E-07 | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| E-08 | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| ID | Run 1 | Run 2 | Observation |
+| --- | --- | --- | --- |
+| E-01 | `[ ]` | `[ ]` | `[ ]` |
+| E-02 | `[ ]` | `[ ]` | `[ ]` |
+| E-03 | `[ ]` | `[ ]` | `[ ]` |
+| E-04 | `[ ]` | `[ ]` | `[ ]` |
+| E-05 | `[ ]` | `[ ]` | `[ ]` |
+| E-06 | `[ ]` | `[ ]` | `[ ]` |
+| E-07 | `[ ]` | `[ ]` | `[ ]` |
+| E-08 | `[ ]` | `[ ]` | `[ ]` |
 
 ## Short evaluation summary
 
@@ -79,5 +79,5 @@
 ## What we cannot conclude
 
 - The menu and stock data are synthetic. The results do not prove real allergy safety.
-- Eight scenarios with three runs each do not prove general reliability for other requests.
+- Eight scenarios with two runs each do not prove general reliability for other requests.
 - The results are valid only for the model versions listed in the test setup.

@@ -1,7 +1,7 @@
 """Run the eight evaluation scenarios (E-01 to E-08) and check the results automatically.
 
 Run from the project root:
-    python -m src.evaluation --mode groq --runs 3
+    python -m src.evaluation --mode groq --runs 2
     python -m src.evaluation --mode local --runs 1
 
 Each run uses a fresh database and a fixed service day (Friday). The checks read the tool
@@ -274,7 +274,7 @@ def print_summary(results):
 def main():
     parser = argparse.ArgumentParser(description="Run the Sprint 1 evaluation scenarios.")
     parser.add_argument("--mode", choices=["groq", "local"], default="groq")
-    parser.add_argument("--runs", type=int, default=3)
+    parser.add_argument("--runs", type=int, default=2)
     args = parser.parse_args()
     run_evaluation(build_model(args.mode), args.mode, args.runs)
 

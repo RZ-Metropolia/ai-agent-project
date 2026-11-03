@@ -63,7 +63,7 @@ The tests need no API key and no GPU. A scripted fake model replaces Qwen.
 ## Evaluation
 
 ```bash
-python -m src.evaluation --mode groq --runs 3
+python -m src.evaluation --mode groq --runs 2
 python -m src.evaluation --mode local --runs 1     # needs a GPU, for example in Colab
 ```
 

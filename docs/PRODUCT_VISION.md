@@ -72,6 +72,6 @@ The LLM is good at understanding a request in natural language, for example "a c
 
 ## Success measures
 
-- Every evaluation scenario passes in at least 2 of 3 repeated runs.
+- Every evaluation scenario passes in both of its 2 repeated Groq runs.
 - No evaluation run creates an unsafe draft (a draft that breaks a dietary, allergen, stock, budget, or pickup-time rule).
 - Every price, ingredient, and stock value in an answer can be traced to a tool result.
