@@ -8,9 +8,9 @@
 
 | Role          | Person                     | What this person did in this sprint                                                                              |
 | ------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Product Owner | `[Person A]`               | `[One prioritization or clarification decision]`                                                                 |
-| Scrum Master  | `[Person B]`               | `[How this person helped expose or remove a blocker]`                                                            |
-| Developers    | `[Person A]`, `[Person B]` | Person A: data, inventory API, and order rules. Person B: tools layer, agent loops, interaction, and evaluation. |
+| Product Owner | Person A               | Decided to move PBI-12 (confirm or cancel a draft) to Sprint 2, so that Sprint 1 focused on one complete workflow.                                                                 |
+| Scrum Master  | Person B               | Organized the daily check-ins on Zoom and WeChat.                                                            |
+| Developers    | Person A, Person B, Person C | Person A: data, inventory API, and order rules. Person B: tools layer, agent loops, interaction, and evaluation. Person C: helped with the database design and seed data (with Person A), Sprint Review, retrospective, slides, and a check of the README run steps in Colab. |
 
 ### How technical work was shared
 
@@ -18,14 +18,14 @@ The work is split at `tools.py`.
 
 - **Person A** builds: everything up to and including `src/tools.py`: the SQLite schema and seed data, the mock inventory API and its client, and the six tool functions with their tests.
 - **Person B** builds: everything that calls `src/tools.py`: the LangChain tool wrappers and executor, the Groq and local Qwen loops, the CLI and the notebook, and the evaluation runner.
-- **Person C** builds:
+- **Person C** builds: the database design and seed data together with Person A, the Sprint Review and retrospective (`docs/SPRINT_1_REVIEW.md`), and the presentation slides. Person C also ran the notebook in Colab from the README steps to check them.
 
 ## Selected items and tasks
 
 | Product Backlog item | Sprint task                                                                                          | Owner(s) | Estimate | Status      | Acceptance evidence                                                                                                                                                                             |
 | -------------------- | ---------------------------------------------------------------------------------------------------- | -------- | -------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | —                    | Agree on the tool contract: signatures and example return values                                     | A, B     | 1 h      | In review   | `docs/CONTRACT.md` is written. Its status is "draft, waiting for review by the agent-layer owner". Person B must approve it.                                                                    |
-| PBI-01, PBI-02       | Create the SQLite schema and synthetic seed data (menu items, ingredients, labels, serving days)     | A        | 4 h      | Done        | `data/schema.sql`, `data/seed.json`, `src/db.py`. `test_row_counts_match_the_seed` and the seed integrity tests in `tests/test_db.py` pass.                                                     |
+| PBI-01, PBI-02       | Create the SQLite schema and synthetic seed data (menu items, ingredients, labels, serving days)     | A, C     | 4 h      | Done        | `data/schema.sql`, `data/seed.json`, `src/db.py`. A and C discussed the table structure and contents; C helped design the seed data. `test_row_counts_match_the_seed` and the seed integrity tests in `tests/test_db.py` pass.                                                     |
 | PBI-01               | Implement `search_menu` (word, category, maximum price)                                              | A        | 1 h      | Done        | `SearchMenuTests` in `tests/test_tools.py` pass, including database prices and an empty result for an unknown word.                                                                             |
 | PBI-02               | Implement `filter_dietary_options` (all labels, no excluded allergens, served today)                 | A        | 3 h      | Done        | `test_result_matches_direct_sql` and `test_e02_database_filter` pass. Vegan + gluten-free mains return only Vegan Thai Curry.                                                                   |
 | PBI-03               | Implement `get_ingredients` with allergens                                                           | A        | 2 h      | Done        | `test_ingredients_and_allergens_match_the_table` and `test_unknown_dish_is_not_found` pass.                                                                                                     |
@@ -40,7 +40,9 @@ The work is split at `tools.py`.
 | PBI-09               | Write the expected results for the evaluation scenarios from the data                                | A        | 2 h      | Done        | Expected column in `SPRINT_1_EVALUATION.md`. `EvaluationDataTests` in `tests/test_db.py` check each expected result against the seed data.                                                      |
 | PBI-09               | Build the evaluation runner; run and record all scenarios in both modes                              | B        | 4 h      | In progress | `src/evaluation.py`. `EvaluationTests` pass: a good scripted model passes E-01 to E-08, and a model that skips the tools fails them. Open: run both modes and fill in `SPRINT_1_EVALUATION.md`. |
 | —                    | Product Vision, Product Backlog                                                                      | A        | 2 h      | In progress | Both files exist. Open: the Product Owner name in `PRODUCT_BACKLOG.md` and the PBI statuses (all still "To do").                                                                                |
-| —                    | README, Sprint Backlog, Review and retrospective, slides                                             | B        | 4 h      | In progress | `README.md` and the Sprint Backlog are updated. `SPRINT_1_REVIEW.md` has only a title. No slides yet.                                                                                           |
+| —                    | README, Sprint Backlog                                                                               | B        | 2 h      | In progress | `README.md` is updated. Open: update the task statuses in this file after the evaluation runs.                                                                                                  |
+| —                    | Sprint Review and 4Ls retrospective                                                                  | C        | 2 h      | Done        | `docs/SPRINT_1_REVIEW.md`: completed, partial, and moved work with evidence, backlog changes, Scrum events, and the team's 4Ls.                                                             |
+| —                    | Sprint 1 presentation slides                                                                         | C        | 3 h      | In progress | Slides in the repository                                                                                                                                                                        |
 
 ## Status on 2026-11-03
 
