@@ -67,4 +67,4 @@ python -m src.evaluation --mode groq --runs 2
 python -m src.evaluation --mode local --runs 1     # needs a GPU, for example in Colab
 ```
 
-Each scenario runs on a fresh database with the service day fixed to Friday 2026-11-06. The runner checks the tool trace, the saved drafts, and key words in the answer. It grades each run as Pass, Partial, or Fail, and saves the details in `docs/eval_results/`. The key-word checks are approximate, so read each answer before you copy a result into [docs/SPRINT_1_EVALUATION.md](docs/SPRINT_1_EVALUATION.md).
+Each scenario runs on a fresh database with the service day fixed to Friday 2026-11-06. The runner checks the tool trace, the saved drafts, and key words in the answer. It grades each run as Pass, Partial, or Fail, and saves the details in `docs/eval_results/`.

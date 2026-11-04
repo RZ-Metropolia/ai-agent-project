@@ -13,6 +13,7 @@ from src.agent_tools import execute_tool, make_tools
 DEFAULT_GROQ_MODEL = "qwen/qwen3.8-27b"
 MAX_ROUNDS = 8  # Model calls per request.
 MAX_TOOL_CALLS = 12  # Tool calls per request.
+MODEL_RETRIES = 2  # Extra tries when Groq refuses a garbled tool call.
 
 SYSTEM_PROMPT = """You are the pickup-order assistant of a restaurant.
 You help customers find dishes and prepare an order draft for pickup today.
@@ -45,6 +46,7 @@ class AgentResult:
     trace: list = field(default_factory=list)  # One entry per tool call: tool, args, result.
     messages: list = field(default_factory=list)  # The full conversation, for the next turn.
     stop_reason: str = "answer"  # answer, round_limit, tool_limit, or model_error.
+    retries: int = 0  # Model calls that were tried again.
 
 
 def strip_thinking(text):
@@ -52,19 +54,31 @@ def strip_thinking(text):
     return re.sub(r"<think>.*?</think>", "", text or "", flags=re.S).strip()
 
 
+def is_tool_call_error(exc):
+    """Groq checks each tool call. A misspelled tool name gives HTTP 400 'tool_use_failed'."""
+    return "tool_use_failed" in str(exc)
+
+
 def run_agent(model, ctx, tool_map, request, history=None):
     """Answer one customer request. `history` is the earlier conversation, without the system prompt."""
     messages = [SystemMessage(system_prompt(ctx)), *(history or []), HumanMessage(request)]
     trace = []
+    retries = 0
 
     def stop(answer, reason):
-        return AgentResult(answer, trace, messages, reason)
+        return AgentResult(answer, trace, messages, reason, retries)
 
     for _ in range(MAX_ROUNDS):
-        try:
-            reply = model.invoke(messages)
-        except Exception as exc:  # A model or network error must not crash the chat.
-            return stop(f"Sorry, the language model failed: {exc}", "model_error")
+        for attempt in range(MODEL_RETRIES + 1):
+            try:
+                reply = model.invoke(messages)
+                break
+            except Exception as exc:  # A model or network error must not crash the chat.
+                # Groq output varies between calls, so a garbled tool call is worth another try.
+                if attempt < MODEL_RETRIES and is_tool_call_error(exc):
+                    retries += 1
+                    continue
+                return stop(f"Sorry, the language model failed: {exc}", "model_error")
         messages.append(reply)
         if not reply.tool_calls:
             return stop(strip_thinking(reply.content), "answer")
