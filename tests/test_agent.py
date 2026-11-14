@@ -9,13 +9,14 @@ import tempfile
 import unittest
 from contextlib import closing
 from pathlib import Path
+from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
 from src import agent
 from src.agent import run_agent, strip_thinking
-from src.agent_tools import execute_tool, make_tools
+from src.agent_tools import execute_tool, make_tools, tool_path
 from src.config import ToolContext
 from src.db import connect, init_db
 from src.evaluation import SCENARIOS, run_scenario, says_amount
@@ -71,12 +72,33 @@ class AgentTestCase(unittest.TestCase):
 
 
 class ExecutorTests(AgentTestCase):
-    def test_registry_has_the_six_tools(self):
+    def test_registry_has_six_direct_tools_and_two_mcp_tools(self):
         self.assertEqual(
             list(self.tools),
             ["search_menu", "filter_dietary_options", "get_ingredients",
-             "check_availability", "calculate_total", "draft_order"],
+             "check_availability", "calculate_total", "draft_order",
+             "list_drafts", "cancel_draft"],
         )
+        self.assertEqual([name for name in self.tools if tool_path(name) == "mcp"],
+                         ["list_drafts", "cancel_draft"])
+
+    def test_model_has_no_tool_to_confirm_a_draft(self):
+        result = execute_tool(self.tools, "confirm_draft", {"draft_id": 1})
+        self.assertEqual(result["error"]["code"], "unknown_tool")
+
+    def test_model_cannot_set_the_session(self):
+        for name, args in (("list_drafts", {"session_id": "other"}),
+                           ("cancel_draft", {"draft_id": 1, "session_id": "other"})):
+            with self.subTest(name):
+                result = execute_tool(self.tools, name, args)
+                self.assertEqual(result["error"]["code"], "invalid_argument")
+
+    def test_invalid_draft_numbers_are_refused_before_the_mcp_call(self):
+        for draft_id in (0, -1, "one", None, 1.5):
+            with self.subTest(draft_id), patch("src.mcp_client.client.call_tool") as call_tool:
+                result = execute_tool(self.tools, "cancel_draft", {"draft_id": draft_id})
+                self.assertEqual(result["error"]["code"], "invalid_argument")
+                call_tool.assert_not_called()
 
     def test_valid_call_returns_the_tool_result(self):
         result = execute_tool(self.tools, "calculate_total", SALMON_TOTAL)
@@ -158,12 +180,37 @@ class AgentLoopTests(AgentTestCase):
 
         result = run_agent(BrokenModel(), self.ctx, self.tools, "menu")
         self.assertEqual(result.stop_reason, "model_error")
-        self.assertIn("no network", result.answer)
+        self.assertIn("no network", result.error)
+        self.assertNotIn("no network", result.answer)  # The customer sees no technical details.
 
     def test_garbled_tool_call_is_tried_again(self):
         model = ScriptedModel(GARBLED_CALL, answer("Hello."))
         result = run_agent(model, self.ctx, self.tools, "Hi")
         self.assertEqual((result.answer, result.retries, model.calls), ("Hello.", 1, 2))
+
+    def test_retry_adds_a_note_with_the_tool_names_and_does_not_keep_it(self):
+        seen = []
+
+        class RecordingModel(ScriptedModel):
+            def invoke(self, messages):
+                seen.append(list(messages))
+                return super().invoke(messages)
+
+        model = RecordingModel(GARBLED_CALL, answer("Hello."))
+        result = run_agent(model, self.ctx, self.tools, "Hi")
+
+        self.assertEqual(len(seen[1]), len(seen[0]) + 1)
+        note = seen[1][-1].content
+        for name in self.tools:
+            self.assertIn(name, note)
+        self.assertEqual([m.content for m in result.messages[1:]], ["Hi", "Hello."])
+
+    def test_trace_marks_how_each_tool_ran(self):
+        model = ScriptedModel(call("search_menu", {}), call("list_drafts", {}, "call_2"), answer("Done."))
+        with patch("src.mcp_client.client.call_tool", return_value={"ok": True, "drafts": []}):
+            result = run_agent(model, self.ctx, self.tools, "menu and drafts")
+        self.assertEqual([(s["tool"], s["path"]) for s in result.trace],
+                         [("search_menu", "direct"), ("list_drafts", "mcp")])
 
     def test_garbled_tool_calls_stop_after_the_retries(self):
         model = ScriptedModel(*[GARBLED_CALL] * (agent.MODEL_RETRIES + 1))
@@ -180,6 +227,10 @@ class AgentLoopTests(AgentTestCase):
         first = run_agent(ScriptedModel(answer("Hello.")), self.ctx, self.tools, "Hi")
         second = run_agent(ScriptedModel(answer("Yes.")), self.ctx, self.tools, "And?", first.messages[1:])
         self.assertEqual([m.content for m in second.messages[1:]], ["Hi", "Hello.", "And?", "Yes."])
+
+    def test_system_prompt_says_only_the_customer_confirms(self):
+        result = run_agent(ScriptedModel(answer("Hi.")), self.ctx, self.tools, "Hi")
+        self.assertIn("You cannot confirm a draft", result.messages[0].content)
 
     def test_system_prompt_has_the_pickup_hours(self):
         result = run_agent(ScriptedModel(answer("Hi.")), self.ctx, self.tools, "Hi")
@@ -273,6 +324,19 @@ GOOD_RUNS = {
         call("draft_order", {"items": [{"name": "Falafel Wrap", "quantity": 1}], "pickup_time": "23:30"}),
         answer("23:30 is outside the pickup hours 11:00-21:00. Please choose another time."),
     ],
+    "E-09": [
+        call("list_drafts", {}),
+        call("cancel_draft", {"draft_id": 1}),
+        answer("Draft 1 was cancelled."),
+    ],
+    "E-10": [
+        call("cancel_draft", {"draft_id": 99}),
+        answer("Draft 99 was not found, so nothing was cancelled."),
+    ],
+    "E-11": [
+        call("list_drafts", {}),
+        answer("Sorry, the order service is not available right now, so I cannot show your drafts."),
+    ],
 }
 
 
@@ -309,6 +373,19 @@ class EvaluationTests(unittest.TestCase):
         self.assertEqual(
             run_scenario(ScriptedModel(*GOOD_RUNS["E-01"]), e01, self.server.url)["result"], "Pass"
         )
+
+    def test_mcp_scenarios_fail_when_the_database_does_not_match_the_answer(self):
+        # The model says "cancelled" but never calls the tool, so the draft is unchanged.
+        scenario = next(s for s in SCENARIOS if s.id == "E-09")
+        model = ScriptedModel(call("list_drafts", {}), answer("Draft 1 was cancelled."))
+        row = run_scenario(model, scenario, self.server.url)
+        self.assertEqual(row["result"], "Fail")
+        self.assertEqual(row["drafts"][0]["status"], "awaiting_customer_confirmation")
+
+    def test_an_invented_draft_fails_the_outage_scenario(self):
+        scenario = next(s for s in SCENARIOS if s.id == "E-11")
+        model = ScriptedModel(call("list_drafts", {}), answer("You have one draft: Margherita Pizza."))
+        self.assertEqual(run_scenario(model, scenario, self.server.url)["result"], "Fail")
 
     def test_amounts_are_not_found_inside_other_amounts(self):
         self.assertTrue(says_amount("over by 9,80 EUR", "9.80"))

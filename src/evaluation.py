@@ -1,4 +1,6 @@
-"""Run the eight evaluation scenarios (E-01 to E-08) and check the results automatically.
+"""Run the evaluation scenarios and check the results automatically.
+
+E-01 to E-08 are the Sprint 1 scenarios. E-09 to E-11 use the MCP client and server.
 
 Run from the project root:
     python -m src.evaluation --mode groq --runs 2
@@ -6,7 +8,7 @@ Run from the project root:
 
 Each run uses a fresh database and a fixed service day (Friday). The checks read the tool
 trace, the saved drafts in SQLite, and the answer text. Answer checks only look for key words,
-so a person must still read each answer before the result goes into SPRINT_1_EVALUATION.md.
+so a person must still read each answer before the result goes into the evaluation document.
 """
 
 import argparse
@@ -19,6 +21,7 @@ from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from src import tools
 from src.agent import build_model, run_agent
 from src.agent_tools import make_tools
 from src.config import ToolContext
@@ -36,6 +39,9 @@ class Scenario:
     request: str
     check: object  # function(Outcome) -> list of (check name, critical, passed)
     api_mode: str = "normal"
+    path: str = "Existing tools"  # The part of the system that the scenario exercises.
+    setup: object = None  # function(ctx), run before the request.
+    order_service_down: bool = False  # The MCP server cannot be started.
 
 
 @dataclass
@@ -59,6 +65,8 @@ def read_drafts(db_path):
             ).fetchall()
             drafts.append(
                 {
+                    "id": row["id"],
+                    "status": row["status"],
                     "pickup_time": row["pickup_time"],
                     "subtotal_cents": row["subtotal_cents"],
                     "budget_cents": row["budget_cents"],
@@ -184,6 +192,53 @@ def check_e08(o):
     ]
 
 
+# MCP scenarios. Each starts with one saved draft: Margherita Pizza and Lemonade at 18:30.
+
+
+def save_pizza_draft(ctx):
+    order = [{"name": "Margherita Pizza", "quantity": 1}, {"name": "Lemonade", "quantity": 1}]
+    assert tools.draft_order(ctx, order, "18:30")["ok"]
+
+
+def draft_status_is(outcome, status):
+    return len(outcome.drafts) == 1 and outcome.drafts[0]["status"] == status
+
+
+def check_e09(o):
+    return [
+        ("cancel_draft was called through MCP", True, called(o, "cancel_draft")),
+        ("the draft is cancelled in the database", True, draft_status_is(o, "cancelled")),
+        ("answer says the draft was cancelled", True, says(o.answer, "cancel")),
+        ("list_drafts was called to find the draft", False, called(o, "list_drafts")),
+    ]
+
+
+def check_e10(o):
+    return [
+        ("an MCP tool was called", True, called(o, "cancel_draft", "list_drafts")),
+        ("the existing draft is unchanged", True,
+         draft_status_is(o, "awaiting_customer_confirmation")),
+        ("answer says draft 99 does not exist", True,
+         says(o.answer, "not found", "no draft", "does not exist", "doesn't exist", "couldn't find",
+              "could not find", "can't find", "cannot find", "not exist", "isn't a draft",
+              "is no draft")),
+    ]
+
+
+def check_e11(o):
+    return [
+        ("list_drafts was called", True, called(o, "list_drafts")),
+        ("answer says the drafts could not be read", True,
+         says(o.answer, "not available", "unavailable", "could not", "couldn't", "cannot", "can't",
+              "unable")),
+        ("answer invents no draft", True, not says(o.answer, "Margherita", "Lemonade", "16.00")),
+        ("the existing draft is unchanged", True,
+         draft_status_is(o, "awaiting_customer_confirmation")),
+    ]
+
+
+MCP_PATH = "Assistant -> MCP client -> MCP server -> SQLite"
+
 SCENARIOS = (
     Scenario("E-01", "Prepare a vegetarian pickup order for one person at 18:30: one main course"
              " and one drink, with a total of at most 20 euros.", check_e01),
@@ -197,6 +252,13 @@ SCENARIOS = (
     Scenario("E-07", "Order 2 Grilled Salmon for pickup at 18:00. My budget is 30 euros.",
              check_e07),
     Scenario("E-08", "Draft one Falafel Wrap for pickup at 23:30.", check_e08),
+    Scenario("E-09", "Please cancel my saved order draft.", check_e09,
+             path=MCP_PATH, setup=save_pizza_draft),
+    Scenario("E-10", "Please cancel draft number 99.", check_e10,
+             path=MCP_PATH + " (no matching draft)", setup=save_pizza_draft),
+    Scenario("E-11", "Which order drafts do I have?", check_e11,
+             path="Assistant -> MCP client (the MCP server cannot start)",
+             setup=save_pizza_draft, order_service_down=True),
 )
 
 
@@ -209,6 +271,9 @@ def grade(checks):
     return "Pass"
 
 
+BROKEN_COMMAND = ("order-service-that-does-not-exist",)
+
+
 def run_scenario(model, scenario, inventory_url):
     with tempfile.TemporaryDirectory() as tmp:
         db_path = init_db(Path(tmp) / "eval.db")
@@ -217,7 +282,11 @@ def run_scenario(model, scenario, inventory_url):
             inventory=InventoryClient(inventory_url),
             service_date=SERVICE_DATE,
             timezone=ZoneInfo("Europe/Berlin"),
+            session_id="evaluation",
+            order_service_command=BROKEN_COMMAND if scenario.order_service_down else (),
         )
+        if scenario.setup:
+            scenario.setup(ctx)
         set_inventory_mode(inventory_url, scenario.api_mode)
         try:
             result = run_agent(model, ctx, make_tools(ctx), scenario.request)
@@ -229,9 +298,11 @@ def run_scenario(model, scenario, inventory_url):
     return {
         "id": scenario.id,
         "request": scenario.request,
+        "path": scenario.path,
         "result": grade(checks),
         "answer": outcome.answer,
         "stop_reason": result.stop_reason,
+        "model_error": result.error,
         "model_retries": result.retries,
         "tools": outcome.tools,
         "drafts": outcome.drafts,
@@ -274,11 +345,13 @@ def print_summary(results):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run the Sprint 1 evaluation scenarios.")
+    parser = argparse.ArgumentParser(description="Run the evaluation scenarios.")
     parser.add_argument("--mode", choices=["groq", "local"], default="groq")
     parser.add_argument("--runs", type=int, default=2)
+    parser.add_argument("--only", nargs="+", metavar="ID", help="run only these scenarios, e.g. E-09")
     args = parser.parse_args()
-    run_evaluation(build_model(args.mode), args.mode, args.runs)
+    scenarios = [s for s in SCENARIOS if not args.only or s.id in args.only]
+    run_evaluation(build_model(args.mode), args.mode, args.runs, scenarios)
 
 
 if __name__ == "__main__":

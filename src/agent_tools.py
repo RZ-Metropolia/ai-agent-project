@@ -1,7 +1,10 @@
-"""LangChain wrappers for the six tools, and the executor that runs the model's tool calls.
+"""LangChain wrappers for the model's tools, and the executor that runs the model's tool calls.
+
+Six tools run as direct Python calls (src/tools.py). Two tools run through the MCP client
+(src/mcp_client), which calls the MCP server (src/mcp_server).
 
 The model sees only the argument schemas below. The context (`ctx`) is bound here, so the
-model cannot change the database, the inventory API, or the service day.
+model cannot change the database, the inventory API, the service day, or the session.
 """
 
 from functools import partial
@@ -9,7 +12,7 @@ from functools import partial
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from src import tools
+from src import mcp_client, tools
 
 
 class _Args(BaseModel):
@@ -61,6 +64,14 @@ class DraftOrderArgs(_Args):
     budget_eur: float | None = Field(None, ge=0, description="The customer's budget in euros.")
 
 
+class ListDraftsArgs(_Args):
+    pass
+
+
+class CancelDraftArgs(_Args):
+    draft_id: int = Field(ge=1, description="The draft number, as returned by list_drafts.")
+
+
 # (function, argument schema, description for the model)
 TOOL_SPECS = (
     (
@@ -96,7 +107,25 @@ TOOL_SPECS = (
         "Save an order draft for pickup today. It checks pickup hours, labels, allergens, budget,"
         " and stock again, and saves nothing if a check fails. It never orders or pays.",
     ),
+    # These two run on the MCP server. confirm_draft is not here: only the customer confirms.
+    (
+        mcp_client.list_drafts,
+        ListDraftsArgs,
+        "List the customer's saved order drafts with their numbers, lines, totals, and status.",
+    ),
+    (
+        mcp_client.cancel_draft,
+        CancelDraftArgs,
+        "Cancel one of the customer's drafts that is still waiting for confirmation.",
+    ),
 )
+
+MCP_TOOL_NAMES = frozenset({"list_drafts", "cancel_draft"})
+
+
+def tool_path(name):
+    """How a tool call runs: 'mcp' through the MCP client and server, or 'direct' in Python."""
+    return "mcp" if name in MCP_TOOL_NAMES else "direct"
 
 
 def make_tools(ctx):

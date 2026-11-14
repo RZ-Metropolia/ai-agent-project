@@ -507,10 +507,12 @@ def _stock_problems(ctx, found):
 def _find_same_draft(conn, draft, found):
     """Return the ID of an awaiting draft with identical content, so that a retry adds no row."""
     candidates = conn.execute(
-        "SELECT id FROM draft_orders WHERE status = ? AND service_date = ? AND pickup_time = ?"
+        "SELECT id FROM draft_orders WHERE session_id = ? AND status = ? AND service_date = ?"
+        " AND pickup_time = ?"
         " AND budget_cents IS ? AND required_labels = ? AND excluded_allergens = ?"
         " AND subtotal_cents = ?",
         (
+            draft["session_id"],
             DRAFT_STATUS,
             draft["service_date"],
             draft["pickup_time"],
@@ -539,10 +541,11 @@ def _save_draft(ctx, draft, found):
         if existing_id is not None:
             return existing_id, True
         draft_id = conn.execute(
-            "INSERT INTO draft_orders (status, service_date, pickup_time, budget_cents,"
+            "INSERT INTO draft_orders (session_id, status, service_date, pickup_time, budget_cents,"
             " required_labels, excluded_allergens, subtotal_cents, created_at)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
+                draft["session_id"],
                 DRAFT_STATUS,
                 draft["service_date"],
                 draft["pickup_time"],
@@ -599,6 +602,7 @@ def draft_order(
         return _error("draft_refused", "The draft was not saved.", problems=problems)
 
     draft = {
+        "session_id": ctx.session_id,
         "service_date": ctx.service_date.isoformat(),
         "pickup_time": pickup_time,
         "budget_cents": budget_cents,

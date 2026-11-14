@@ -57,7 +57,8 @@ CREATE TABLE ingredient_allergens (
 
 CREATE TABLE draft_orders (
   id                 INTEGER PRIMARY KEY AUTOINCREMENT,
-  -- 'confirmed' and 'cancelled' are reserved for PBI-12; Sprint 1 tools never write them.
+  session_id         TEXT NOT NULL DEFAULT 'default',  -- The customer session that owns the draft.
+  -- Only src/orders.py writes 'confirmed' and 'cancelled'. Confirming never orders or pays.
   status             TEXT NOT NULL DEFAULT 'awaiting_customer_confirmation'
                      CHECK (status IN ('awaiting_customer_confirmation', 'confirmed', 'cancelled')),
   service_date       TEXT NOT NULL,  -- 'YYYY-MM-DD'

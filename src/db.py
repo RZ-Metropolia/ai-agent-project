@@ -105,5 +105,17 @@ def init_db(db_path=DB_PATH, seed_path=SEED_PATH):
     return db_path
 
 
+def ensure_db(db_path=DB_PATH):
+    """Build the database if it is missing or has an older schema. Return True if it was built."""
+    db_path = Path(db_path)
+    if db_path.exists():
+        with closing(connect(db_path, read_only=True)) as conn:
+            columns = {row["name"] for row in conn.execute("PRAGMA table_info(draft_orders)")}
+        if "session_id" in columns:
+            return False
+    init_db(db_path)
+    return True
+
+
 if __name__ == "__main__":
     print(f"Created {init_db()}")

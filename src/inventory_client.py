@@ -25,6 +25,14 @@ class InventoryClient:
         self._timeout = timeout
         self._transport = transport
 
+    @property
+    def base_url(self):
+        return self._base_url
+
+    @property
+    def timeout(self):
+        return self._timeout
+
     def get_portions(self):
         """Return {item_id: portions left} from the API, or raise InventoryUnavailable."""
         try:

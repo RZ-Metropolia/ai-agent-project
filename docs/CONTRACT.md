@@ -193,6 +193,45 @@ A refused request saves nothing and lists every problem found:
 | `draft_refused` | draft | Business checks failed. Has `problems`. |
 | `database_error` | all | SQLite failed. Nothing is saved. |
 
+## Sprint 2: sessions and draft management
+
+`ToolContext` has two new fields, both hidden from the model:
+
+- `session_id`: the customer session. `draft_order` stores it, and a repeated identical call returns the existing draft only inside the same session.
+- `order_service_command`: the command that starts the MCP server. Empty means `python -m src.mcp_server`.
+
+### Draft tools on the MCP server
+
+`src/orders.py` has the rules, `src/mcp_server` exposes them, and `src/mcp_client` calls them. On the server, each tool takes `session_id` as its first argument. The client fills it in from `ctx`, so the model's schemas do not have it.
+
+| Function in `src/mcp_client` | MCP tool | Model can call it |
+|---|---|---|
+| `list_drafts(ctx)` | `list_drafts(session_id)` | Yes |
+| `cancel_draft(ctx, draft_id)` | `cancel_draft(session_id, draft_id)` | Yes |
+| `confirm_draft(ctx, draft_id)` | `confirm_draft(session_id, draft_id)` | No: only the customer, with the Confirm button |
+
+```json
+{"ok": true, "drafts": [{"draft_id": 1, "status": "awaiting_customer_confirmation", "service_date": "2026-11-06", "pickup_time": "18:30", "lines": ["same shape as calculate_total"], "subtotal_eur": "16.00", "subtotal_cents": 1600, "budget_eur": "20.00"}]}
+```
+
+```json
+{"ok": true, "draft": {"draft_id": 1, "status": "cancelled"}, "message": "Draft 1 was cancelled."}
+```
+
+Line prices are the prices when the draft was made. A session sees and changes only its own drafts: another session's draft is `draft_not_found`. `confirm_draft` reads live stock again and refuses if a dish is sold out or the inventory API fails. It changes only the status, and it never orders or pays.
+
+| Code | Returned by | Meaning |
+|---|---|---|
+| `draft_not_found` | cancel, confirm | No draft with this number in this session. |
+| `draft_not_awaiting` | cancel, confirm | The draft is already confirmed or cancelled. Has `status`. |
+| `draft_expired` | confirm | The draft was made for another service day. |
+| `confirmation_refused` | confirm | The stock check failed. Has `problems` (`sold_out`, `insufficient_stock`, `inventory_unavailable`). |
+| `mcp_unavailable` | MCP client | The MCP server did not start or did not answer in 30 seconds. |
+| `mcp_tool_error` | MCP client | The MCP server refused the call, for example wrong argument types or an unknown tool. |
+| `mcp_bad_response` | MCP client | The MCP server returned something that is not a tool result. |
+
+The agent's trace marks each call with `path`: `direct` or `mcp`.
+
 ## Mock inventory API
 
 | Request | Result |

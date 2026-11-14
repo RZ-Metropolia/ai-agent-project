@@ -1,0 +1,2490 @@
+[
+  {
+    "run": 1,
+    "id": "E-01",
+    "request": "Prepare a vegetarian pickup order for one person at 18:30: one main course and one drink, with a total of at most 20 euros.",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "Your vegetarian pickup draft is ready (draft #1):\n\n- Margherita Pizza – 12.50 €\n- Lemonade – 3.50 €\n- **Total: 16.00 €** (within your 20 € budget)\n\nPickup today at 18:30.\n\nNote: this is only a draft — please confirm it with the Confirm button in the app. I can't place the order or take payment.",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "filter_dietary_options",
+      "filter_dietary_options",
+      "check_availability",
+      "draft_order"
+    ],
+    "drafts": [
+      {
+        "id": 1,
+        "status": "awaiting_customer_confirmation",
+        "pickup_time": "18:30",
+        "subtotal_cents": 1600,
+        "budget_cents": 2000,
+        "required_labels": [
+          "vegetarian"
+        ],
+        "lines": [
+          {
+            "name": "Margherita Pizza",
+            "category": "main",
+            "quantity": 1,
+            "vegetarian": 1
+          },
+          {
+            "name": "Lemonade",
+            "category": "drink",
+            "quantity": 1,
+            "vegetarian": 1
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "check": "exactly one draft is saved",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "draft has one main and one drink",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "all items are vegetarian",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "subtotal is at most 20.00",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "pickup time is 18:30",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "draft_order got label vegetarian and budget 20",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "filter_dietary_options was called",
+        "critical": false,
+        "passed": true
+      },
+      {
+        "check": "answer states the subtotal",
+        "critical": false,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "filter_dietary_options",
+        "path": "direct",
+        "args": {
+          "category": "main",
+          "max_price_eur": 15,
+          "required_labels": [
+            "vegetarian"
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "category": "main",
+              "description": "Stone-baked pizza with tomato sauce, mozzarella and basil.",
+              "price_eur": "12.50",
+              "price_cents": 1250,
+              "labels": [
+                "vegetarian"
+              ],
+              "allergens": [
+                "gluten",
+                "milk"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Mushroom Risotto",
+              "category": "main",
+              "description": "Creamy arborio rice with mushrooms and parmesan.",
+              "price_eur": "13.50",
+              "price_cents": 1350,
+              "labels": [
+                "gluten_free",
+                "vegetarian"
+              ],
+              "allergens": [
+                "milk"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Vegan Thai Curry",
+              "category": "main",
+              "description": "Coconut curry with tofu, peanuts and jasmine rice.",
+              "price_eur": "14.50",
+              "price_cents": 1450,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [
+                "peanuts",
+                "soy"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Falafel Wrap",
+              "category": "main",
+              "description": "Chickpea falafel in a flatbread with tahini and salad.",
+              "price_eur": "9.50",
+              "price_cents": 950,
+              "labels": [
+                "dairy_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [
+                "gluten",
+                "sesame"
+              ],
+              "served_today": true
+            }
+          ],
+          "required_labels": [
+            "vegetarian"
+          ],
+          "excluded_allergens": []
+        }
+      },
+      {
+        "tool": "filter_dietary_options",
+        "path": "direct",
+        "args": {
+          "category": "drink",
+          "max_price_eur": 5,
+          "required_labels": [
+            "vegetarian"
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Lemonade",
+              "category": "drink",
+              "description": "House-made lemonade.",
+              "price_eur": "3.50",
+              "price_cents": 350,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [],
+              "served_today": true
+            },
+            {
+              "name": "Still Water",
+              "category": "drink",
+              "description": "Bottled still water.",
+              "price_eur": "2.00",
+              "price_cents": 200,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [],
+              "served_today": true
+            },
+            {
+              "name": "Iced Tea",
+              "category": "drink",
+              "description": "Black iced tea with lemon.",
+              "price_eur": "3.00",
+              "price_cents": 300,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [],
+              "served_today": true
+            },
+            {
+              "name": "Mango Lassi",
+              "category": "drink",
+              "description": "Mango and yogurt drink.",
+              "price_eur": "4.50",
+              "price_cents": 450,
+              "labels": [
+                "gluten_free",
+                "vegetarian"
+              ],
+              "allergens": [
+                "milk"
+              ],
+              "served_today": true
+            }
+          ],
+          "required_labels": [
+            "vegetarian"
+          ],
+          "excluded_allergens": []
+        }
+      },
+      {
+        "tool": "check_availability",
+        "path": "direct",
+        "args": {
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "quantity": 1
+            },
+            {
+              "name": "Lemonade",
+              "quantity": 1
+            }
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "quantity": 1,
+              "portions_left": 8,
+              "sold_out": false,
+              "available": true
+            },
+            {
+              "name": "Lemonade",
+              "quantity": 1,
+              "portions_left": 20,
+              "sold_out": false,
+              "available": true
+            }
+          ],
+          "all_available": true
+        }
+      },
+      {
+        "tool": "draft_order",
+        "path": "direct",
+        "args": {
+          "budget_eur": 20,
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "quantity": 1
+            },
+            {
+              "name": "Lemonade",
+              "quantity": 1
+            }
+          ],
+          "pickup_time": "18:30",
+          "required_labels": [
+            "vegetarian"
+          ]
+        },
+        "result": {
+          "ok": true,
+          "draft": {
+            "draft_id": 1,
+            "status": "awaiting_customer_confirmation",
+            "service_date": "2026-11-06",
+            "pickup_time": "18:30",
+            "lines": [
+              {
+                "name": "Margherita Pizza",
+                "quantity": 1,
+                "unit_price_eur": "12.50",
+                "unit_price_cents": 1250,
+                "line_total_eur": "12.50",
+                "line_total_cents": 1250
+              },
+              {
+                "name": "Lemonade",
+                "quantity": 1,
+                "unit_price_eur": "3.50",
+                "unit_price_cents": 350,
+                "line_total_eur": "3.50",
+                "line_total_cents": 350
+              }
+            ],
+            "subtotal_eur": "16.00",
+            "subtotal_cents": 1600,
+            "budget_eur": "20.00",
+            "required_labels": [
+              "vegetarian"
+            ],
+            "excluded_allergens": []
+          },
+          "already_existed": false,
+          "message": "Draft saved. The customer must confirm it. No order or payment was made."
+        }
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "id": "E-02",
+    "request": "Which main courses are both vegan and gluten-free today?",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "Today's vegan and gluten-free main course is:\n\n- **Vegan Thai Curry** – €14.50 (coconut curry with tofu, peanuts and jasmine rice; contains peanuts and soy)",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "filter_dietary_options"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "filter_dietary_options was called",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer names Vegan Thai Curry",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer names no other main",
+        "critical": false,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "filter_dietary_options",
+        "path": "direct",
+        "args": {
+          "category": "main",
+          "required_labels": [
+            "vegan",
+            "gluten_free"
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Vegan Thai Curry",
+              "category": "main",
+              "description": "Coconut curry with tofu, peanuts and jasmine rice.",
+              "price_eur": "14.50",
+              "price_cents": 1450,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [
+                "peanuts",
+                "soy"
+              ],
+              "served_today": true
+            }
+          ],
+          "required_labels": [
+            "gluten_free",
+            "vegan"
+          ],
+          "excluded_allergens": []
+        }
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "id": "E-03",
+    "request": "I have a peanut allergy. Is the Vegan Thai Curry safe for me to order?",
+    "path": "Existing tools",
+    "result": "Partial",
+    "answer": "No — the Vegan Thai Curry contains **peanuts**, so it is not safe for you to order.\n\nIf you'd like, I can look for other dishes that are peanut-free (and vegan, if you prefer). Just let me know!",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "get_ingredients"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "ingredients were read from a tool",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer mentions peanuts",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer mentions soy",
+        "critical": false,
+        "passed": false
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "get_ingredients",
+        "path": "direct",
+        "args": {
+          "item_name": "Vegan Thai Curry"
+        },
+        "result": {
+          "ok": true,
+          "item": "Vegan Thai Curry",
+          "ingredients": [
+            {
+              "name": "Bell pepper",
+              "allergens": []
+            },
+            {
+              "name": "Coconut milk",
+              "allergens": []
+            },
+            {
+              "name": "Jasmine rice",
+              "allergens": []
+            },
+            {
+              "name": "Peanuts",
+              "allergens": [
+                "peanuts"
+              ]
+            },
+            {
+              "name": "Tofu",
+              "allergens": [
+                "soy"
+              ]
+            }
+          ],
+          "allergens": [
+            "peanuts",
+            "soy"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "id": "E-04",
+    "request": "Please draft a pickup order for one Mushroom Risotto at 19:00.",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "I can't draft that order — the Mushroom Risotto is sold out today (0 portions left).\n\nWould you like me to suggest a similar main dish that's available?",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "search_menu",
+      "check_availability"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "stock was checked",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer says sold out",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "search_menu",
+        "path": "direct",
+        "args": {
+          "query": "Mushroom Risotto"
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Mushroom Risotto",
+              "category": "main",
+              "description": "Creamy arborio rice with mushrooms and parmesan.",
+              "price_eur": "13.50",
+              "price_cents": 1350,
+              "labels": [
+                "gluten_free",
+                "vegetarian"
+              ],
+              "allergens": [
+                "milk"
+              ],
+              "served_today": true
+            }
+          ]
+        }
+      },
+      {
+        "tool": "check_availability",
+        "path": "direct",
+        "args": {
+          "items": [
+            {
+              "name": "Mushroom Risotto",
+              "quantity": 1
+            }
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Mushroom Risotto",
+              "quantity": 1,
+              "portions_left": 0,
+              "sold_out": true,
+              "available": false
+            }
+          ],
+          "all_available": false
+        }
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "id": "E-05",
+    "request": "I want a vegan dessert that costs less than 4 euros.",
+    "path": "Existing tools",
+    "result": "Partial",
+    "answer": "I'm sorry, but there are no vegan desserts under €4 available today. Would you like me to check vegan desserts without a price limit, or look at other dessert options?",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "filter_dietary_options"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "a menu tool was called",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer names Berry Sorbet or 4.90",
+        "critical": false,
+        "passed": false
+      },
+      {
+        "check": "answer names no other dessert",
+        "critical": false,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "filter_dietary_options",
+        "path": "direct",
+        "args": {
+          "category": "dessert",
+          "max_price_eur": 4,
+          "required_labels": [
+            "vegan"
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [],
+          "required_labels": [
+            "vegan"
+          ],
+          "excluded_allergens": []
+        }
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "id": "E-06",
+    "request": "Please draft a pickup order for one Margherita Pizza at 18:30.",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "I couldn't prepare the draft: the inventory service is currently unavailable (HTTP 503), so I can't verify that the Margherita Pizza is in stock. I won't guess at stock levels.\n\nCould you try again in a few minutes? Once stock can be checked, I'll draft the pickup order for one Margherita Pizza at 18:30.",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "search_menu",
+      "check_availability"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "answer says stock could not be checked",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "stock was requested from a tool",
+        "critical": false,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "search_menu",
+        "path": "direct",
+        "args": {
+          "query": "Margherita Pizza"
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "category": "main",
+              "description": "Stone-baked pizza with tomato sauce, mozzarella and basil.",
+              "price_eur": "12.50",
+              "price_cents": 1250,
+              "labels": [
+                "vegetarian"
+              ],
+              "allergens": [
+                "gluten",
+                "milk"
+              ],
+              "served_today": true
+            }
+          ]
+        }
+      },
+      {
+        "tool": "check_availability",
+        "path": "direct",
+        "args": {
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "quantity": 1
+            }
+          ]
+        },
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "inventory_unavailable",
+            "message": "Availability could not be checked: the inventory service returned HTTP 503."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "id": "E-07",
+    "request": "Order 2 Grilled Salmon for pickup at 18:00. My budget is 30 euros.",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "I couldn't save the draft: 2 × Grilled Salmon comes to **39.80 EUR**, which is **9.80 EUR over** your 30 EUR budget.\n\nOptions:\n- Increase your budget to at least 39.80 EUR, or\n- Order just 1 Grilled Salmon (19.90 EUR).\n\nLet me know how you'd like to proceed.",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "search_menu",
+      "check_availability",
+      "draft_order"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "total was calculated by a tool",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer states 39.80",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer states 9.80 over budget",
+        "critical": false,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "search_menu",
+        "path": "direct",
+        "args": {
+          "query": "Grilled Salmon"
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Grilled Salmon",
+              "category": "main",
+              "description": "Grilled salmon fillet with roast potatoes and lemon.",
+              "price_eur": "19.90",
+              "price_cents": 1990,
+              "labels": [
+                "dairy_free",
+                "gluten_free"
+              ],
+              "allergens": [
+                "fish"
+              ],
+              "served_today": true
+            }
+          ]
+        }
+      },
+      {
+        "tool": "check_availability",
+        "path": "direct",
+        "args": {
+          "items": [
+            {
+              "name": "Grilled Salmon",
+              "quantity": 2
+            }
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Grilled Salmon",
+              "quantity": 2,
+              "portions_left": 6,
+              "sold_out": false,
+              "available": true
+            }
+          ],
+          "all_available": true
+        }
+      },
+      {
+        "tool": "draft_order",
+        "path": "direct",
+        "args": {
+          "budget_eur": 30,
+          "items": [
+            {
+              "name": "Grilled Salmon",
+              "quantity": 2
+            }
+          ],
+          "pickup_time": "18:00"
+        },
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "draft_refused",
+            "message": "The draft was not saved."
+          },
+          "problems": [
+            {
+              "code": "over_budget",
+              "message": "The total of 39.80 EUR is 9.80 EUR over the budget of 30.00 EUR.",
+              "subtotal_eur": "39.80",
+              "budget_eur": "30.00",
+              "over_budget_by_eur": "9.80"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "id": "E-08",
+    "request": "Draft one Falafel Wrap for pickup at 23:30.",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "I can't prepare that draft — pickup is only available between 11:00 and 21:00, and 23:30 is outside those hours. Would you like to pick a time within 11:00–21:00?",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "answer gives the pickup hours",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": []
+  },
+  {
+    "run": 1,
+    "id": "E-09",
+    "request": "Please cancel my saved order draft.",
+    "path": "Assistant -> MCP client -> MCP server -> SQLite",
+    "result": "Pass",
+    "answer": "Your draft (Margherita Pizza + Lemonade, €16.00) has been cancelled.",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "list_drafts",
+      "cancel_draft"
+    ],
+    "drafts": [
+      {
+        "id": 1,
+        "status": "cancelled",
+        "pickup_time": "18:30",
+        "subtotal_cents": 1600,
+        "budget_cents": null,
+        "required_labels": [],
+        "lines": [
+          {
+            "name": "Margherita Pizza",
+            "category": "main",
+            "quantity": 1,
+            "vegetarian": 1
+          },
+          {
+            "name": "Lemonade",
+            "category": "drink",
+            "quantity": 1,
+            "vegetarian": 1
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "check": "cancel_draft was called through MCP",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "the draft is cancelled in the database",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer says the draft was cancelled",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "list_drafts was called to find the draft",
+        "critical": false,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "list_drafts",
+        "path": "mcp",
+        "args": {},
+        "result": {
+          "ok": true,
+          "drafts": [
+            {
+              "draft_id": 1,
+              "status": "awaiting_customer_confirmation",
+              "service_date": "2026-11-06",
+              "pickup_time": "18:30",
+              "lines": [
+                {
+                  "name": "Margherita Pizza",
+                  "quantity": 1,
+                  "unit_price_eur": "12.50",
+                  "unit_price_cents": 1250,
+                  "line_total_eur": "12.50",
+                  "line_total_cents": 1250
+                },
+                {
+                  "name": "Lemonade",
+                  "quantity": 1,
+                  "unit_price_eur": "3.50",
+                  "unit_price_cents": 350,
+                  "line_total_eur": "3.50",
+                  "line_total_cents": 350
+                }
+              ],
+              "subtotal_eur": "16.00",
+              "subtotal_cents": 1600,
+              "budget_eur": null
+            }
+          ]
+        }
+      },
+      {
+        "tool": "cancel_draft",
+        "path": "mcp",
+        "args": {
+          "draft_id": 1
+        },
+        "result": {
+          "ok": true,
+          "draft": {
+            "draft_id": 1,
+            "status": "cancelled",
+            "service_date": "2026-11-06",
+            "pickup_time": "18:30",
+            "lines": [
+              {
+                "name": "Margherita Pizza",
+                "quantity": 1,
+                "unit_price_eur": "12.50",
+                "unit_price_cents": 1250,
+                "line_total_eur": "12.50",
+                "line_total_cents": 1250
+              },
+              {
+                "name": "Lemonade",
+                "quantity": 1,
+                "unit_price_eur": "3.50",
+                "unit_price_cents": 350,
+                "line_total_eur": "3.50",
+                "line_total_cents": 350
+              }
+            ],
+            "subtotal_eur": "16.00",
+            "subtotal_cents": 1600,
+            "budget_eur": null
+          },
+          "message": "Draft 1 was cancelled."
+        }
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "id": "E-10",
+    "request": "Please cancel draft number 99.",
+    "path": "Assistant -> MCP client -> MCP server -> SQLite (no matching draft)",
+    "result": "Pass",
+    "answer": "There's no draft number 99. Your only saved draft is:\n\n- **Draft 1** – awaiting confirmation – pickup today at 18:30\n  - Margherita Pizza ×1 – €12.50\n  - Lemonade ×1 – €3.50\n  - Subtotal: €16.00\n\nWould you like me to cancel draft 1 instead?",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "cancel_draft",
+      "list_drafts"
+    ],
+    "drafts": [
+      {
+        "id": 1,
+        "status": "awaiting_customer_confirmation",
+        "pickup_time": "18:30",
+        "subtotal_cents": 1600,
+        "budget_cents": null,
+        "required_labels": [],
+        "lines": [
+          {
+            "name": "Margherita Pizza",
+            "category": "main",
+            "quantity": 1,
+            "vegetarian": 1
+          },
+          {
+            "name": "Lemonade",
+            "category": "drink",
+            "quantity": 1,
+            "vegetarian": 1
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "check": "an MCP tool was called",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "the existing draft is unchanged",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer says draft 99 does not exist",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "cancel_draft",
+        "path": "mcp",
+        "args": {
+          "draft_id": 99
+        },
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "draft_not_found",
+            "message": "Draft 99 was not found."
+          }
+        }
+      },
+      {
+        "tool": "list_drafts",
+        "path": "mcp",
+        "args": {},
+        "result": {
+          "ok": true,
+          "drafts": [
+            {
+              "draft_id": 1,
+              "status": "awaiting_customer_confirmation",
+              "service_date": "2026-11-06",
+              "pickup_time": "18:30",
+              "lines": [
+                {
+                  "name": "Margherita Pizza",
+                  "quantity": 1,
+                  "unit_price_eur": "12.50",
+                  "unit_price_cents": 1250,
+                  "line_total_eur": "12.50",
+                  "line_total_cents": 1250
+                },
+                {
+                  "name": "Lemonade",
+                  "quantity": 1,
+                  "unit_price_eur": "3.50",
+                  "unit_price_cents": 350,
+                  "line_total_eur": "3.50",
+                  "line_total_cents": 350
+                }
+              ],
+              "subtotal_eur": "16.00",
+              "subtotal_cents": 1600,
+              "budget_eur": null
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "id": "E-11",
+    "request": "Which order drafts do I have?",
+    "path": "Assistant -> MCP client (the MCP server cannot start)",
+    "result": "Pass",
+    "answer": "I'm sorry, but the order service is not available right now, so I can't retrieve your saved drafts. Please try again in a few minutes.",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "list_drafts"
+    ],
+    "drafts": [
+      {
+        "id": 1,
+        "status": "awaiting_customer_confirmation",
+        "pickup_time": "18:30",
+        "subtotal_cents": 1600,
+        "budget_cents": null,
+        "required_labels": [],
+        "lines": [
+          {
+            "name": "Margherita Pizza",
+            "category": "main",
+            "quantity": 1,
+            "vegetarian": 1
+          },
+          {
+            "name": "Lemonade",
+            "category": "drink",
+            "quantity": 1,
+            "vegetarian": 1
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "check": "list_drafts was called",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer says the drafts could not be read",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer invents no draft",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "the existing draft is unchanged",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "list_drafts",
+        "path": "mcp",
+        "args": {},
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "mcp_unavailable",
+            "message": "The order service is not available right now."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "id": "E-01",
+    "request": "Prepare a vegetarian pickup order for one person at 18:30: one main course and one drink, with a total of at most 20 euros.",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "Your vegetarian pickup draft is ready (draft #1):\n\n- Margherita Pizza – €12.50\n- Lemonade – €3.50\n- **Total: €16.00** (within your €20 budget)\n\nPickup today at 18:30.\n\nPlease confirm the draft with the Confirm button in the app — I can't confirm or pay for you.",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "filter_dietary_options",
+      "check_availability",
+      "draft_order"
+    ],
+    "drafts": [
+      {
+        "id": 1,
+        "status": "awaiting_customer_confirmation",
+        "pickup_time": "18:30",
+        "subtotal_cents": 1600,
+        "budget_cents": 2000,
+        "required_labels": [
+          "vegetarian"
+        ],
+        "lines": [
+          {
+            "name": "Margherita Pizza",
+            "category": "main",
+            "quantity": 1,
+            "vegetarian": 1
+          },
+          {
+            "name": "Lemonade",
+            "category": "drink",
+            "quantity": 1,
+            "vegetarian": 1
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "check": "exactly one draft is saved",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "draft has one main and one drink",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "all items are vegetarian",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "subtotal is at most 20.00",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "pickup time is 18:30",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "draft_order got label vegetarian and budget 20",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "filter_dietary_options was called",
+        "critical": false,
+        "passed": true
+      },
+      {
+        "check": "answer states the subtotal",
+        "critical": false,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "filter_dietary_options",
+        "path": "direct",
+        "args": {
+          "category": null,
+          "excluded_allergens": null,
+          "max_price_eur": 20,
+          "required_labels": [
+            "vegetarian"
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "category": "main",
+              "description": "Stone-baked pizza with tomato sauce, mozzarella and basil.",
+              "price_eur": "12.50",
+              "price_cents": 1250,
+              "labels": [
+                "vegetarian"
+              ],
+              "allergens": [
+                "gluten",
+                "milk"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Mushroom Risotto",
+              "category": "main",
+              "description": "Creamy arborio rice with mushrooms and parmesan.",
+              "price_eur": "13.50",
+              "price_cents": 1350,
+              "labels": [
+                "gluten_free",
+                "vegetarian"
+              ],
+              "allergens": [
+                "milk"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Vegan Thai Curry",
+              "category": "main",
+              "description": "Coconut curry with tofu, peanuts and jasmine rice.",
+              "price_eur": "14.50",
+              "price_cents": 1450,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [
+                "peanuts",
+                "soy"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Falafel Wrap",
+              "category": "main",
+              "description": "Chickpea falafel in a flatbread with tahini and salad.",
+              "price_eur": "9.50",
+              "price_cents": 950,
+              "labels": [
+                "dairy_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [
+                "gluten",
+                "sesame"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Tomato Soup",
+              "category": "starter",
+              "description": "Slow-cooked tomato and basil soup.",
+              "price_eur": "6.50",
+              "price_cents": 650,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [],
+              "served_today": true
+            },
+            {
+              "name": "Garlic Bread",
+              "category": "starter",
+              "description": "Toasted bread with garlic butter.",
+              "price_eur": "5.50",
+              "price_cents": 550,
+              "labels": [
+                "vegetarian"
+              ],
+              "allergens": [
+                "gluten",
+                "milk"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Caprese Salad",
+              "category": "starter",
+              "description": "Tomato, mozzarella and basil with olive oil.",
+              "price_eur": "7.90",
+              "price_cents": 790,
+              "labels": [
+                "gluten_free",
+                "vegetarian"
+              ],
+              "allergens": [
+                "milk"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Berry Sorbet",
+              "category": "dessert",
+              "description": "Mixed berry sorbet with lemon.",
+              "price_eur": "4.90",
+              "price_cents": 490,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [],
+              "served_today": true
+            },
+            {
+              "name": "Vanilla Ice Cream",
+              "category": "dessert",
+              "description": "Vanilla ice cream made with fresh cream.",
+              "price_eur": "3.80",
+              "price_cents": 380,
+              "labels": [
+                "gluten_free",
+                "vegetarian"
+              ],
+              "allergens": [
+                "milk"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Chocolate Brownie",
+              "category": "dessert",
+              "description": "Dark chocolate brownie with walnuts.",
+              "price_eur": "5.90",
+              "price_cents": 590,
+              "labels": [
+                "vegetarian"
+              ],
+              "allergens": [
+                "eggs",
+                "gluten",
+                "milk",
+                "soy",
+                "tree_nuts"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Tiramisu",
+              "category": "dessert",
+              "description": "Coffee-soaked ladyfingers with mascarpone cream.",
+              "price_eur": "6.50",
+              "price_cents": 650,
+              "labels": [
+                "vegetarian"
+              ],
+              "allergens": [
+                "eggs",
+                "gluten",
+                "milk"
+              ],
+              "served_today": true
+            },
+            {
+              "name": "Lemonade",
+              "category": "drink",
+              "description": "House-made lemonade.",
+              "price_eur": "3.50",
+              "price_cents": 350,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [],
+              "served_today": true
+            },
+            {
+              "name": "Still Water",
+              "category": "drink",
+              "description": "Bottled still water.",
+              "price_eur": "2.00",
+              "price_cents": 200,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [],
+              "served_today": true
+            },
+            {
+              "name": "Iced Tea",
+              "category": "drink",
+              "description": "Black iced tea with lemon.",
+              "price_eur": "3.00",
+              "price_cents": 300,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [],
+              "served_today": true
+            },
+            {
+              "name": "Mango Lassi",
+              "category": "drink",
+              "description": "Mango and yogurt drink.",
+              "price_eur": "4.50",
+              "price_cents": 450,
+              "labels": [
+                "gluten_free",
+                "vegetarian"
+              ],
+              "allergens": [
+                "milk"
+              ],
+              "served_today": true
+            }
+          ],
+          "required_labels": [
+            "vegetarian"
+          ],
+          "excluded_allergens": []
+        }
+      },
+      {
+        "tool": "check_availability",
+        "path": "direct",
+        "args": {
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "quantity": 1
+            },
+            {
+              "name": "Lemonade",
+              "quantity": 1
+            }
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "quantity": 1,
+              "portions_left": 8,
+              "sold_out": false,
+              "available": true
+            },
+            {
+              "name": "Lemonade",
+              "quantity": 1,
+              "portions_left": 20,
+              "sold_out": false,
+              "available": true
+            }
+          ],
+          "all_available": true
+        }
+      },
+      {
+        "tool": "draft_order",
+        "path": "direct",
+        "args": {
+          "budget_eur": 20,
+          "excluded_allergens": null,
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "quantity": 1
+            },
+            {
+              "name": "Lemonade",
+              "quantity": 1
+            }
+          ],
+          "pickup_time": "18:30",
+          "required_labels": [
+            "vegetarian"
+          ]
+        },
+        "result": {
+          "ok": true,
+          "draft": {
+            "draft_id": 1,
+            "status": "awaiting_customer_confirmation",
+            "service_date": "2026-11-06",
+            "pickup_time": "18:30",
+            "lines": [
+              {
+                "name": "Margherita Pizza",
+                "quantity": 1,
+                "unit_price_eur": "12.50",
+                "unit_price_cents": 1250,
+                "line_total_eur": "12.50",
+                "line_total_cents": 1250
+              },
+              {
+                "name": "Lemonade",
+                "quantity": 1,
+                "unit_price_eur": "3.50",
+                "unit_price_cents": 350,
+                "line_total_eur": "3.50",
+                "line_total_cents": 350
+              }
+            ],
+            "subtotal_eur": "16.00",
+            "subtotal_cents": 1600,
+            "budget_eur": "20.00",
+            "required_labels": [
+              "vegetarian"
+            ],
+            "excluded_allergens": []
+          },
+          "already_existed": false,
+          "message": "Draft saved. The customer must confirm it. No order or payment was made."
+        }
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "id": "E-02",
+    "request": "Which main courses are both vegan and gluten-free today?",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "Today's vegan and gluten-free main course is:\n\n- **Vegan Thai Curry** – €14.50 (coconut curry with tofu, peanuts and jasmine rice; contains peanuts and soy)",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "filter_dietary_options"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "filter_dietary_options was called",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer names Vegan Thai Curry",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer names no other main",
+        "critical": false,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "filter_dietary_options",
+        "path": "direct",
+        "args": {
+          "category": "main",
+          "required_labels": [
+            "vegan",
+            "gluten_free"
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Vegan Thai Curry",
+              "category": "main",
+              "description": "Coconut curry with tofu, peanuts and jasmine rice.",
+              "price_eur": "14.50",
+              "price_cents": 1450,
+              "labels": [
+                "dairy_free",
+                "gluten_free",
+                "vegan",
+                "vegetarian"
+              ],
+              "allergens": [
+                "peanuts",
+                "soy"
+              ],
+              "served_today": true
+            }
+          ],
+          "required_labels": [
+            "gluten_free",
+            "vegan"
+          ],
+          "excluded_allergens": []
+        }
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "id": "E-03",
+    "request": "I have a peanut allergy. Is the Vegan Thai Curry safe for me to order?",
+    "path": "Existing tools",
+    "result": "Partial",
+    "answer": "No — the Vegan Thai Curry contains **peanuts**, so it is not safe for you to order.\n\nIf you'd like, I can look for other dishes that are peanut-free (and vegan, if you prefer). Just let me know!",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "get_ingredients"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "ingredients were read from a tool",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer mentions peanuts",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer mentions soy",
+        "critical": false,
+        "passed": false
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "get_ingredients",
+        "path": "direct",
+        "args": {
+          "item_name": "Vegan Thai Curry"
+        },
+        "result": {
+          "ok": true,
+          "item": "Vegan Thai Curry",
+          "ingredients": [
+            {
+              "name": "Bell pepper",
+              "allergens": []
+            },
+            {
+              "name": "Coconut milk",
+              "allergens": []
+            },
+            {
+              "name": "Jasmine rice",
+              "allergens": []
+            },
+            {
+              "name": "Peanuts",
+              "allergens": [
+                "peanuts"
+              ]
+            },
+            {
+              "name": "Tofu",
+              "allergens": [
+                "soy"
+              ]
+            }
+          ],
+          "allergens": [
+            "peanuts",
+            "soy"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "id": "E-04",
+    "request": "Please draft a pickup order for one Mushroom Risotto at 19:00.",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "I can't draft that order — the Mushroom Risotto is sold out today (0 portions left).\n\nWould you like me to suggest a similar main dish that's available?",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "search_menu",
+      "check_availability"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "stock was checked",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer says sold out",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "search_menu",
+        "path": "direct",
+        "args": {
+          "query": "Mushroom Risotto"
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Mushroom Risotto",
+              "category": "main",
+              "description": "Creamy arborio rice with mushrooms and parmesan.",
+              "price_eur": "13.50",
+              "price_cents": 1350,
+              "labels": [
+                "gluten_free",
+                "vegetarian"
+              ],
+              "allergens": [
+                "milk"
+              ],
+              "served_today": true
+            }
+          ]
+        }
+      },
+      {
+        "tool": "check_availability",
+        "path": "direct",
+        "args": {
+          "items": [
+            {
+              "name": "Mushroom Risotto",
+              "quantity": 1
+            }
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Mushroom Risotto",
+              "quantity": 1,
+              "portions_left": 0,
+              "sold_out": true,
+              "available": false
+            }
+          ],
+          "all_available": false
+        }
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "id": "E-05",
+    "request": "I want a vegan dessert that costs less than 4 euros.",
+    "path": "Existing tools",
+    "result": "Partial",
+    "answer": "I'm sorry, but there are no vegan desserts under €4 available today. Would you like me to check vegan desserts without a price limit, or look at other dessert options?",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "filter_dietary_options"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "a menu tool was called",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer names Berry Sorbet or 4.90",
+        "critical": false,
+        "passed": false
+      },
+      {
+        "check": "answer names no other dessert",
+        "critical": false,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "filter_dietary_options",
+        "path": "direct",
+        "args": {
+          "category": "dessert",
+          "max_price_eur": 4,
+          "required_labels": [
+            "vegan"
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [],
+          "required_labels": [
+            "vegan"
+          ],
+          "excluded_allergens": []
+        }
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "id": "E-06",
+    "request": "Please draft a pickup order for one Margherita Pizza at 18:30.",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "I couldn't prepare the draft: the inventory service is currently unavailable (HTTP 503), so I can't verify that the Margherita Pizza is in stock. I won't guess at stock levels.\n\nCould you try again in a few minutes? Once stock can be checked, I'll draft the pickup order for one Margherita Pizza at 18:30.",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "search_menu",
+      "check_availability"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "answer says stock could not be checked",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "stock was requested from a tool",
+        "critical": false,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "search_menu",
+        "path": "direct",
+        "args": {
+          "query": "Margherita Pizza"
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "category": "main",
+              "description": "Stone-baked pizza with tomato sauce, mozzarella and basil.",
+              "price_eur": "12.50",
+              "price_cents": 1250,
+              "labels": [
+                "vegetarian"
+              ],
+              "allergens": [
+                "gluten",
+                "milk"
+              ],
+              "served_today": true
+            }
+          ]
+        }
+      },
+      {
+        "tool": "check_availability",
+        "path": "direct",
+        "args": {
+          "items": [
+            {
+              "name": "Margherita Pizza",
+              "quantity": 1
+            }
+          ]
+        },
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "inventory_unavailable",
+            "message": "Availability could not be checked: the inventory service returned HTTP 503."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "id": "E-07",
+    "request": "Order 2 Grilled Salmon for pickup at 18:00. My budget is 30 euros.",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "I couldn't save the draft: 2 × Grilled Salmon comes to **39.80 EUR**, which is **9.80 EUR over** your 30 EUR budget.\n\nOptions:\n- Increase your budget to at least 39.80 EUR, or\n- Order just 1 Grilled Salmon (19.90 EUR).\n\nLet me know how you'd like to proceed.",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "search_menu",
+      "check_availability",
+      "draft_order"
+    ],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "total was calculated by a tool",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer states 39.80",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer states 9.80 over budget",
+        "critical": false,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "search_menu",
+        "path": "direct",
+        "args": {
+          "query": "Grilled Salmon"
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Grilled Salmon",
+              "category": "main",
+              "description": "Grilled salmon fillet with roast potatoes and lemon.",
+              "price_eur": "19.90",
+              "price_cents": 1990,
+              "labels": [
+                "dairy_free",
+                "gluten_free"
+              ],
+              "allergens": [
+                "fish"
+              ],
+              "served_today": true
+            }
+          ]
+        }
+      },
+      {
+        "tool": "check_availability",
+        "path": "direct",
+        "args": {
+          "items": [
+            {
+              "name": "Grilled Salmon",
+              "quantity": 2
+            }
+          ]
+        },
+        "result": {
+          "ok": true,
+          "items": [
+            {
+              "name": "Grilled Salmon",
+              "quantity": 2,
+              "portions_left": 6,
+              "sold_out": false,
+              "available": true
+            }
+          ],
+          "all_available": true
+        }
+      },
+      {
+        "tool": "draft_order",
+        "path": "direct",
+        "args": {
+          "budget_eur": 30,
+          "items": [
+            {
+              "name": "Grilled Salmon",
+              "quantity": 2
+            }
+          ],
+          "pickup_time": "18:00"
+        },
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "draft_refused",
+            "message": "The draft was not saved."
+          },
+          "problems": [
+            {
+              "code": "over_budget",
+              "message": "The total of 39.80 EUR is 9.80 EUR over the budget of 30.00 EUR.",
+              "subtotal_eur": "39.80",
+              "budget_eur": "30.00",
+              "over_budget_by_eur": "9.80"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "id": "E-08",
+    "request": "Draft one Falafel Wrap for pickup at 23:30.",
+    "path": "Existing tools",
+    "result": "Pass",
+    "answer": "I can't prepare that draft — pickup is only available between 11:00 and 21:00, and 23:30 is outside those hours. Would you like to pick a time within 11:00–21:00?",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [],
+    "drafts": [],
+    "checks": [
+      {
+        "check": "answer gives the pickup hours",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "no draft is saved",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": []
+  },
+  {
+    "run": 2,
+    "id": "E-09",
+    "request": "Please cancel my saved order draft.",
+    "path": "Assistant -> MCP client -> MCP server -> SQLite",
+    "result": "Pass",
+    "answer": "Your draft (Margherita Pizza + Lemonade, €16.00) has been cancelled.",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "list_drafts",
+      "cancel_draft"
+    ],
+    "drafts": [
+      {
+        "id": 1,
+        "status": "cancelled",
+        "pickup_time": "18:30",
+        "subtotal_cents": 1600,
+        "budget_cents": null,
+        "required_labels": [],
+        "lines": [
+          {
+            "name": "Margherita Pizza",
+            "category": "main",
+            "quantity": 1,
+            "vegetarian": 1
+          },
+          {
+            "name": "Lemonade",
+            "category": "drink",
+            "quantity": 1,
+            "vegetarian": 1
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "check": "cancel_draft was called through MCP",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "the draft is cancelled in the database",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer says the draft was cancelled",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "list_drafts was called to find the draft",
+        "critical": false,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "list_drafts",
+        "path": "mcp",
+        "args": {},
+        "result": {
+          "ok": true,
+          "drafts": [
+            {
+              "draft_id": 1,
+              "status": "awaiting_customer_confirmation",
+              "service_date": "2026-11-06",
+              "pickup_time": "18:30",
+              "lines": [
+                {
+                  "name": "Margherita Pizza",
+                  "quantity": 1,
+                  "unit_price_eur": "12.50",
+                  "unit_price_cents": 1250,
+                  "line_total_eur": "12.50",
+                  "line_total_cents": 1250
+                },
+                {
+                  "name": "Lemonade",
+                  "quantity": 1,
+                  "unit_price_eur": "3.50",
+                  "unit_price_cents": 350,
+                  "line_total_eur": "3.50",
+                  "line_total_cents": 350
+                }
+              ],
+              "subtotal_eur": "16.00",
+              "subtotal_cents": 1600,
+              "budget_eur": null
+            }
+          ]
+        }
+      },
+      {
+        "tool": "cancel_draft",
+        "path": "mcp",
+        "args": {
+          "draft_id": 1
+        },
+        "result": {
+          "ok": true,
+          "draft": {
+            "draft_id": 1,
+            "status": "cancelled",
+            "service_date": "2026-11-06",
+            "pickup_time": "18:30",
+            "lines": [
+              {
+                "name": "Margherita Pizza",
+                "quantity": 1,
+                "unit_price_eur": "12.50",
+                "unit_price_cents": 1250,
+                "line_total_eur": "12.50",
+                "line_total_cents": 1250
+              },
+              {
+                "name": "Lemonade",
+                "quantity": 1,
+                "unit_price_eur": "3.50",
+                "unit_price_cents": 350,
+                "line_total_eur": "3.50",
+                "line_total_cents": 350
+              }
+            ],
+            "subtotal_eur": "16.00",
+            "subtotal_cents": 1600,
+            "budget_eur": null
+          },
+          "message": "Draft 1 was cancelled."
+        }
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "id": "E-10",
+    "request": "Please cancel draft number 99.",
+    "path": "Assistant -> MCP client -> MCP server -> SQLite (no matching draft)",
+    "result": "Pass",
+    "answer": "There's no draft number 99. Your only saved draft is:\n\n- **Draft 1** – awaiting confirmation – pickup today at 18:30\n  - Margherita Pizza ×1 – €12.50\n  - Lemonade ×1 – €3.50\n  - Subtotal: €16.00\n\nWould you like me to cancel draft 1 instead?",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "cancel_draft",
+      "list_drafts"
+    ],
+    "drafts": [
+      {
+        "id": 1,
+        "status": "awaiting_customer_confirmation",
+        "pickup_time": "18:30",
+        "subtotal_cents": 1600,
+        "budget_cents": null,
+        "required_labels": [],
+        "lines": [
+          {
+            "name": "Margherita Pizza",
+            "category": "main",
+            "quantity": 1,
+            "vegetarian": 1
+          },
+          {
+            "name": "Lemonade",
+            "category": "drink",
+            "quantity": 1,
+            "vegetarian": 1
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "check": "an MCP tool was called",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "the existing draft is unchanged",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer says draft 99 does not exist",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "cancel_draft",
+        "path": "mcp",
+        "args": {
+          "draft_id": 99
+        },
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "draft_not_found",
+            "message": "Draft 99 was not found."
+          }
+        }
+      },
+      {
+        "tool": "list_drafts",
+        "path": "mcp",
+        "args": {},
+        "result": {
+          "ok": true,
+          "drafts": [
+            {
+              "draft_id": 1,
+              "status": "awaiting_customer_confirmation",
+              "service_date": "2026-11-06",
+              "pickup_time": "18:30",
+              "lines": [
+                {
+                  "name": "Margherita Pizza",
+                  "quantity": 1,
+                  "unit_price_eur": "12.50",
+                  "unit_price_cents": 1250,
+                  "line_total_eur": "12.50",
+                  "line_total_cents": 1250
+                },
+                {
+                  "name": "Lemonade",
+                  "quantity": 1,
+                  "unit_price_eur": "3.50",
+                  "unit_price_cents": 350,
+                  "line_total_eur": "3.50",
+                  "line_total_cents": 350
+                }
+              ],
+              "subtotal_eur": "16.00",
+              "subtotal_cents": 1600,
+              "budget_eur": null
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "id": "E-11",
+    "request": "Which order drafts do I have?",
+    "path": "Assistant -> MCP client (the MCP server cannot start)",
+    "result": "Pass",
+    "answer": "I'm sorry, but the order service is not available right now, so I can't retrieve your saved drafts. Please try again in a few minutes.",
+    "stop_reason": "answer",
+    "model_error": "",
+    "model_retries": 0,
+    "tools": [
+      "list_drafts"
+    ],
+    "drafts": [
+      {
+        "id": 1,
+        "status": "awaiting_customer_confirmation",
+        "pickup_time": "18:30",
+        "subtotal_cents": 1600,
+        "budget_cents": null,
+        "required_labels": [],
+        "lines": [
+          {
+            "name": "Margherita Pizza",
+            "category": "main",
+            "quantity": 1,
+            "vegetarian": 1
+          },
+          {
+            "name": "Lemonade",
+            "category": "drink",
+            "quantity": 1,
+            "vegetarian": 1
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "check": "list_drafts was called",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer says the drafts could not be read",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "answer invents no draft",
+        "critical": true,
+        "passed": true
+      },
+      {
+        "check": "the existing draft is unchanged",
+        "critical": true,
+        "passed": true
+      }
+    ],
+    "trace": [
+      {
+        "tool": "list_drafts",
+        "path": "mcp",
+        "args": {},
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "mcp_unavailable",
+            "message": "The order service is not available right now."
+          }
+        }
+      }
+    ]
+  }
+]

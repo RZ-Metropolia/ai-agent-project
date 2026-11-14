@@ -28,6 +28,8 @@ class ToolContext:
     timezone: ZoneInfo
     pickup_open: time = PICKUP_OPEN
     pickup_close: time = PICKUP_CLOSE
+    session_id: str = "default"  # Drafts belong to one customer session.
+    order_service_command: tuple = ()  # Command that starts the MCP server. Empty: the default.
 
 
 def inventory_api_url():
@@ -42,7 +44,7 @@ def load_context():
     service_date = os.getenv("SERVICE_DATE")
     timeout = os.getenv("INVENTORY_TIMEOUT_SECONDS")
     return ToolContext(
-        db_path=DB_PATH,
+        db_path=Path(os.getenv("RESTAURANT_DB_PATH") or DB_PATH),
         inventory=InventoryClient(
             inventory_api_url(),
             timeout=float(timeout) if timeout else DEFAULT_INVENTORY_TIMEOUT_SECONDS,

@@ -51,6 +51,26 @@ The LLM is good at understanding a request in natural language, for example "a c
 - Streamlit GUI: optional in Sprint 1; planned for Sprint 2.
 - Payment, sending orders to the kitchen, and user accounts: not needed to show the first workflow, and payment is not allowed.
 
+## Second-version scope (Sprint 2)
+
+Sprint 2 keeps everything from Sprint 1 and adds one new workflow: **the customer sees, confirms, or cancels the drafts of their own session.**
+
+**Representative user requests:** the Sprint 1 request above in the Streamlit page, then *"Please cancel my draft."* or a click on **Confirm**.
+
+**In scope**
+
+- A Streamlit page with a chat, a cart of drafts, Confirm and Cancel buttons, and the tool calls of each answer.
+- An MCP server with three order tools (`list_drafts`, `cancel_draft`, `confirm_draft`) and an MCP client inside the assistant. The six Sprint 1 tools stay direct Python calls.
+- Customer sessions: a draft belongs to one session.
+- A corrective retry for tool calls that Groq refuses (from the Sprint 1 evaluation).
+- Function unit tests with saved results, and an evaluation with Sprint 1 regression scenarios and MCP scenarios.
+
+**Out of scope for Sprint 2**
+
+- RAG, multi-agent design, and fine-tuning: the course puts them outside Sprint 2. Our first roadmap had RAG in Sprint 2, so PBI-13 moved to a later sprint.
+- All six Sprint 1 tools through MCP: the course does not ask for it, and it would risk regressions.
+- Payment, sending orders to the kitchen, and user accounts.
+
 ## Rules the product must follow
 
 > Project 7 says: "Never execute live purchases. Dietary and allergen validations must depend strictly on tool data, not LLM guesses."
@@ -60,15 +80,20 @@ The LLM is good at understanding a request in natural language, for example "a c
 - The model never calculates prices. `calculate_total` adds integer cents from database prices.
 - `draft_order` checks pickup hours, menu day, dietary labels, allergens, budget, and stock again before it saves a draft.
 - If the inventory API is not available, `draft_order` refuses to create a draft (it fails closed).
-- The model can call only the six approved tools, with validated arguments.
+- The model can call only the approved tools, with validated arguments: six in Sprint 1, plus `list_drafts` and `cancel_draft` since Sprint 2.
+- Only the customer can confirm a draft, with the Confirm button. The model has no tool for it. Confirming changes the status and never pays.
+- A session can see and change only its own drafts.
+- Before a draft is confirmed, the stock is checked again. If the inventory API is not available, the confirmation is refused.
 
 ## Product roadmap
 
 | Sprint | Course theme | Our product goal |
 |---|---|---|
 | Sprint 1 | Notebook assistant: filter by dietary tags, check availability through an API, compute prices deterministically, test in Groq and local Colab modes | A notebook and CLI agent that creates verified order drafts from database and API data only. |
-| Sprint 2 | Streamlit ordering app with a cart; ordering tools through MCP; RAG over allergen warnings, kitchen policies, and FAQs | A Streamlit ordering page with a cart, the tools served through MCP, cited answers about allergen warnings and FAQs, and unit tests. |
-| Sprint 3 | Menu-discovery, allergen-validation, and order-assembly agents; fine-tuning for structured order extraction; tests for out-of-stock items, budget overruns, and conflicting allergen tags | A comparison of a single agent and a multi-agent design, a fine-tuned order extractor, and systematic security and edge-case tests. |
+| Sprint 2 | Keep the Sprint 1 product; add an MCP server and client, a Streamlit GUI, and function unit tests | A Streamlit ordering page with a cart, order-draft tools served through MCP, confirm and cancel for drafts, and unit tests with saved results. |
+| Sprint 3 | Menu-discovery, allergen-validation, and order-assembly agents; fine-tuning for structured order extraction; tests for out-of-stock items, budget overruns, and conflicting allergen tags; RAG, if the course puts it in scope | A comparison of a single agent and a multi-agent design, a fine-tuned order extractor, systematic security and edge-case tests, and cited answers about allergen warnings and FAQs. |
+
+The Sprint 2 row changed after the course published its Sprint 2 requirements: RAG moved out, and the MCP scope became three new order tools instead of the six existing tools.
 
 ## Success measures
 
