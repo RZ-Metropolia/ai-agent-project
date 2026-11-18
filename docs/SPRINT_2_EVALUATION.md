@@ -6,15 +6,15 @@ This file evaluates the complete assistant, from a request to the answer. Functi
 
 | Item | Value |
 | --- | --- |
-| Date of the runs | 2026-11-15 (Groq runner and Streamlit) |
+| Date of the runs | 2026-11-15 (Groq runner and Streamlit); 2026-11-18 (second Groq run and local Qwen, both in Colab) |
 | Groq model | `qwen/qwen3.8-27b`, temperature 0, at most 800 output tokens per reply |
-| Local model (Colab) | `Qwen/Qwen3.5-4B`, 4-bit (NF4), Colab GPU — **not run yet for Sprint 2** |
-| Code version | Working tree on top of commit `0e852d9`; `seed.json` version 1.0 |
+| Local model (Colab) | `Qwen/Qwen3.5-4B`, 4-bit (NF4), Colab T4 GPU, greedy decoding; run on 2026-11-18 |
+| Code version | 2026-11-15: working tree on top of commit `0e852d9`. 2026-11-18: commit `b1b1c71`, cloned into Colab by `notebooks/demo.ipynb`. `seed.json` version 1.0 |
 | Database | A fresh database for each scenario run |
 | API state | Normal stock from `mock_inventory.json`; outage switch on only for E-06 |
 | MCP state | The MCP server starts normally; for E-11 its start command is broken on purpose |
 | Fixed conditions | Service day fixed to Friday 2026-11-06; pickup hours 11:00–21:00 |
-| Runs per scenario | 2 with the runner; 1 by hand in Streamlit |
+| Runs per scenario | Groq: 2 with the runner, on each date; local Qwen: 1 (greedy decoding gives the same output each time); Streamlit: 1 by hand |
 
 ## How we checked correctness
 
@@ -28,7 +28,7 @@ This file evaluates the complete assistant, from a request to the answer. Functi
 
 **Result rule:** Pass = all checks pass. Partial = only a non-critical check fails. Fail = a critical check fails.
 
-The details of every run (answers, checks, tool traces) are in [eval_results/groq_2026-11-15_0004.json](eval_results/groq_2026-11-15_0004.json).
+The details of every run (answers, checks, tool traces) are in [eval_results/groq_2026-11-15_0004.json](eval_results/groq_2026-11-15_0004.json), [eval_results/groq_2026-11-18_1216.json](eval_results/groq_2026-11-18_1216.json), and [eval_results/local_2026-11-18_1240.json](eval_results/local_2026-11-18_1240.json).
 
 ## Evaluation record
 
@@ -65,33 +65,44 @@ The details of every run (answers, checks, tool traces) are in [eval_results/gro
 - Every scenario had the same result in both runs.
 - E-01 used different arguments: run 1 called the filter twice, with `category` and its own price limits (15 € for the main, 5 € for the drink); run 2 called it once with `max_price_eur=20`. Both chose Margherita Pizza and Lemonade. The price limits in run 1 were the model's own choice, not the customer's.
 - E-03, E-04, E-05, E-07, E-08, E-09, E-10, and E-11 had word for word the same answers in both runs.
+- **Second Groq run on 2026-11-18, in Colab:** every scenario got the same result as on 2026-11-15 (18 Pass, 4 Partial, 0 Fail in 22 runs). No run needed a model retry (`model_retries` is 0 everywhere), so the corrective retry (PBI-21) was again not used.
 
 ## Groq and local Qwen comparison
 
-**The local model was not run in Sprint 2 yet.** It needs a Colab GPU. Run cell "Local mode" in `notebooks/demo.ipynb`, add the result file to `docs/eval_results/`, and fill in this table. The Sprint 1 local results are in [SPRINT_1_EVALUATION.md](SPRINT_1_EVALUATION.md).
+Local Qwen ran once per scenario in Colab on 2026-11-18 ([eval_results/local_2026-11-18_1240.json](eval_results/local_2026-11-18_1240.json)). Each answer and trace was read and compared with the tool results and the drafts in SQLite.
 
-| ID | Groq result | Local Qwen result | Difference and likely reason |
+| ID | Groq result (2026-11-15 and 2026-11-18, 2 runs each) | Local Qwen result | Difference and likely reason |
 | --- | --- | --- | --- |
-| E-01 to E-08 | 12 Pass, 4 Partial (16 runs) | `[not run]` | `[ ]` |
-| E-09 | Pass / Pass | `[not run]` | `[ ]` |
-| E-10 | Pass / Pass | `[not run]` | `[ ]` |
-| E-11 | Pass / Pass | `[not run]` | `[ ]` |
+| E-01 | Pass ×4 | Pass | Same draft: Margherita Pizza + Lemonade, 1600 cents. The local model needed 7 tool calls (Groq: 3–4): it first called `search_menu` with the word "vegetarian", got an empty list, then switched to `filter_dietary_options`, and also called `calculate_total`. A smaller model chooses tools less well, but corrects itself from the tool results. |
+| E-02 | Pass ×4 | Pass | Same answer: only Vegan Thai Curry, 14.50 €. The local answer also names peanuts and soy from the tool result. |
+| E-03 | Partial ×4 | Partial | Same: "contains peanuts, not safe", but soy is not mentioned. The cause is the answer criterion (PBI-22), not the model. |
+| E-04 | Pass ×4 | Pass | After `check_availability` returned 0 portions, the local model still called `draft_order`. `draft_order` refused it with `sold_out`, so no draft was saved. Groq stopped after the stock check. The final check in `draft_order` caught the model's mistake. |
+| E-05 | Partial ×4 | Partial | Same: "no vegan dessert under 4 €", Berry Sorbet (4.90 €) not named. PBI-22. |
+| E-06 | Pass ×4 | Pass | During the API outage, the local model still called `draft_order`. It was refused with `inventory_unavailable` (fail closed), and the answer says the stock cannot be checked. No draft. Groq did not try `draft_order`. |
+| E-07 | Pass ×4 | **Partial** | The local answer gives 39.80 € and says it is over the 30 € budget, but not by how much, although `draft_order` returned "9.80 EUR over". Non-critical. Groq copied both amounts. |
+| E-08 | Pass ×4 | Pass | No difference: no tool call; the hours 11:00–21:00 come from the system prompt. |
+| E-09 | Pass ×4 | Pass | Draft 1 cancelled through MCP; SQLite agrees. The local model called `cancel_draft` a second time; the server refused it with `draft_not_awaiting`, so nothing changed. |
+| E-10 | Pass ×4 | Pass | Clear "Draft 99 was not found", draft 1 unchanged. The local model did not call `list_drafts` first, and its answer names the internal tool ("list_drafts function") to the customer. Groq listed the real draft instead. |
+| E-11 | Pass ×4 | Pass | No difference: `mcp_unavailable`; the answer says the order service is not available and invents no draft. |
+
+**Local Qwen: 11 runs, 8 Pass, 3 Partial, 0 Fail.** The 4B model is less efficient and twice tried to save a draft that the tools had already refused. In both cases `draft_order` refused it, so no unsafe draft was saved. The model was slow in Colab (no optimized kernels installed), so Groq stays the mode for the Streamlit page.
 
 ## Short evaluation summary
 
 - **Sprint 1 functions preserved:** all eight Sprint 1 scenarios still work on Groq: 12 of 16 runs pass and 4 are partial, with no fail. The safety rules held in every run: no draft was saved or changed when the request had to be refused. One answer got worse: E-03 no longer mentions soy.
 - **New MCP-enabled task:** the customer can ask the assistant to show or cancel the drafts of their own session, and can confirm a draft with a button. Before a confirmation, the MCP server checks live stock again.
 - **Streamlit interaction tested:** G-01, one run by hand: an order draft, a refused confirmation during an inventory outage, and a cancel through the assistant. Pass.
-- **Results:** Groq runner: 22 scenario runs, 18 pass, 4 partial, 0 fail. Streamlit: 1 run, pass. Local Qwen: not run yet.
+- **Results:** Groq runner: 22 scenario runs on 2026-11-15 and 22 again on 2026-11-18, each time 18 pass, 4 partial, 0 fail. Local Qwen: 11 runs, 8 pass, 3 partial, 0 fail. Streamlit: 1 run, pass.
 - **Important limitation and next improvement:**
   - *Groq limit.* The first complete run on 2026-11-14 failed in 21 of 22 scenario runs with HTTP 429: Groq's free tier now refuses a request that may write more than 1000 tokens. No draft was saved in those runs. We set a limit of 800 output tokens per reply and more retries, and ran the evaluation again. The second run took about 18 minutes because of the per-minute token limit. A live demo can be slow for the same reason. We did not keep the result file of the failed run.
-  - *Corrective retry not seen in a real run.* The Sprint 1 failures (refused tool calls) did not happen in these 22 runs, so the new retry was never used. It is covered only by a unit test. We cannot say that it fixes the Sprint 1 failure.
-  - *Next:* run the local model, and decide the E-03 and E-05 answer criteria (PBI-22).
+  - *Corrective retry not seen in a real run.* The Sprint 1 failures (refused tool calls) did not happen in these 44 Groq runs (22 on each date), so the new retry was never used. It is covered only by a unit test. We cannot say that it fixes the Sprint 1 failure.
+  - *Local model.* It reaches the same safe results, but it needs more tool calls, twice tried a draft that the tools had refused, and once named an internal tool to the customer (E-10).
+  - *Next:* decide the E-03 and E-05 answer criteria (PBI-22).
 
 ## What we cannot conclude
 
 - The menu and stock data are synthetic. The results do not prove real allergy safety.
-- Eleven scenarios with two runs each do not prove general reliability for other requests.
-- The Sprint 1 failures appeared in 2 of 16 runs. Their absence in 22 runs does not prove that they are gone.
+- Eleven scenarios with four Groq runs and one local run each do not prove general reliability for other requests.
+- The Sprint 1 failures appeared in 2 of 16 runs. Their absence in 44 runs does not prove that they are gone.
 - The Streamlit scenario ran once, in one browser, with one session. Several customers at the same time were not tested.
 - The results are valid only for the model version and the Groq limits on the test date.

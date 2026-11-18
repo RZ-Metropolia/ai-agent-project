@@ -8,11 +8,10 @@
 
 ## Was the Sprint Goal met?
 
-**Mostly yes, on Groq.** In the Streamlit page, a request reaches Qwen, Qwen calls the Sprint 1 tools, and a draft appears in the cart. The assistant lists and cancels drafts through the MCP client and server, and the Confirm button confirms a draft through the same MCP server after a new stock check. Nothing is ordered or paid.
+**Mostly yes.** In the Streamlit page, a request reaches Qwen, Qwen calls the Sprint 1 tools, and a draft appears in the cart. The assistant lists and cancels drafts through the MCP client and server, and the Confirm button confirms a draft through the same MCP server after a new stock check. Nothing is ordered or paid. Local Qwen in Colab reaches the same safe results, with more tool calls.
 
 Not finished:
 
-- The local Qwen comparison was not run for Sprint 2.
 - The corrective retry (PBI-21) was never used in a real run, so we do not know whether it fixes the Sprint 1 failure.
 - Groq's token limit makes requests slow.
 
@@ -45,14 +44,13 @@ Entry points: `streamlit run app.py`; also `python -m src.cli --trace` and `note
 | PBI-11 | MCP server with `list_drafts`, `cancel_draft`, `confirm_draft`; MCP client over stdio; two MCP tools for the assistant | `src/mcp_server/`, `src/mcp_client/`; E-09, E-10, E-11 pass in both Groq runs |
 | PBI-10 | Streamlit page: chat, tool calls with their path, cart, Confirm and Cancel, outage switch | `app.py`, `src/app_logic.py`; G-01; `tests/test_app.py` |
 | PBI-14 | 85 new unit tests; saved results | 239 tests pass; `SPRINT_2_UNIT_TESTS.md` |
-| PBI-23 (Groq part) | Runner with MCP scenarios; Groq and Streamlit results | `SPRINT_2_EVALUATION.md` |
+| PBI-23 | Runner with MCP scenarios; Groq, Streamlit, and local Qwen results | `SPRINT_2_EVALUATION.md`. Groq: 18 Pass, 4 Partial, 0 Fail on both 2026-11-15 and 2026-11-18. Local Qwen in Colab: 8 Pass, 3 Partial, 0 Fail |
 
 ## Partially completed work
 
 | Item | What is missing | Next action |
 |---|---|---|
 | PBI-21 corrective retry | Built and unit tested, but no Groq run had a refused tool call, so it was never used with a real model. | Keep watching for `model_retries` above 0 in the result files. Do not call it fixed before that. |
-| PBI-23 local comparison | The evaluation was not run with local Qwen in Colab. | `[who, when]` runs it and fills in the comparison table. |
 | E-03 answer | On Groq the answer no longer mentions soy (Pass in Sprint 1, Partial now). The safety answer is still correct. | PBI-22: decide the criterion, then change the prompt or the check. |
 | Tool contract | `docs/CONTRACT.md` still has the status "draft, waiting for review". | `[name]` approves it. |
 
