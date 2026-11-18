@@ -1,9 +1,7 @@
 # Sprint 2 Review — Restaurant Order Agent
 
-> **To the team:** the technical sections are filled in from the code, tests, and evaluation. Everything in `[square brackets]` must come from you: dates, people, feedback, and the retrospective. Do not claim an event that did not happen.
-
-- **Sprint:** 2 (`[start date]` to `[end date]`)
-- **Team:** `[names and roles]`
+- **Sprint:** 2 (2026-11-05 to 2026-11-18)
+- **Team:** Zongru Li (Product Owner), Juyin Tang (Scrum Master), Rui Zhao. All three are developers.
 - **Sprint Goal:** "A customer can order in a Streamlit page: the assistant prepares a draft with the Sprint 1 tools, and the customer sees, cancels, or confirms their own drafts through an MCP server."
 
 ## Was the Sprint Goal met?
@@ -52,7 +50,7 @@ Entry points: `streamlit run app.py`; also `python -m src.cli --trace` and `note
 |---|---|---|
 | PBI-21 corrective retry | Built and unit tested, but no Groq run had a refused tool call, so it was never used with a real model. | Keep watching for `model_retries` above 0 in the result files. Do not call it fixed before that. |
 | E-03 answer | On Groq the answer no longer mentions soy (Pass in Sprint 1, Partial now). The safety answer is still correct. | PBI-22: decide the criterion, then change the prompt or the check. |
-| Tool contract | `docs/CONTRACT.md` still has the status "draft, waiting for review". | `[name]` approves it. |
+| Tool contract | `docs/CONTRACT.md` still has the status "draft, waiting for review". | Rui Zhao approves it. |
 
 ## Not completed or moved
 
@@ -75,30 +73,30 @@ The inventory API is a mock REST API that we wrote; it is not a real restaurant 
 
 ## Feedback
 
-`[Feedback from the Sprint Review: who said what, and what we will change. Write "No external feedback yet" if there was none.]`
+No external feedback yet.
 
 ## Changes to the Product Backlog
 
 - PBI-21 stays open as Partial.
 - PBI-22 now also covers E-03.
 - New: PBI-24 (find drafts again after a page reload), PBI-25 (one long MCP connection).
-- `[Any change from the review feedback]`
+- PBI-22 moves to Sprint 3, with Zongru Li as the owner.
 
 ## Scrum events
 
 | Event | What happened |
 |---|---|
-| Sprint Planning | `[date and method; the Sprint Goal; the selected PBIs; estimates; the scope choices above; dependencies]` |
-| Daily Scrum / check-ins | `[real frequency and method; one obstacle, adjustment, or coordination decision — for example the Groq token limit]` |
-| Sprint Review | `[date and method; what was shown; accepted and incomplete items; feedback]` |
-| Sprint Retrospective | `[date and method]` See below. |
+| Sprint Planning | 2026-11-05, on Zoom and WeChat. The team set the Sprint Goal and selected PBI-21, PBI-12, PBI-11, PBI-10, PBI-14, PBI-23, and PBI-22: 25 story points in total, about 8 for each person. Scope choices: PBI-11 became smaller (8 → 5 points), RAG moved out, PBI-14 was widened to all project functions, and PBI-23 was added. Dependencies: the draft rules (PBI-12) came before the MCP server (PBI-11); the MCP client came before the Confirm and Cancel buttons on the page (PBI-10); the evaluation (PBI-23) came last. |
+| Daily Scrum / check-ins | Once a day, in meetings on Zoom and messages on WeChat. One obstacle: on 2026-11-14 the first complete evaluation run failed in 21 of 22 runs with HTTP 429, because of Groq's output-token limit. The team limited each reply to 800 tokens, added more retries, and ran the evaluation again on 2026-11-15. |
+| Sprint Review | 2026-11-18, on Zoom and WeChat. The team showed the three steps under "Increment shown" and the Groq and local Qwen results. Accepted: PBI-12, PBI-11, PBI-10, PBI-14, PBI-23. Not accepted: PBI-21 (Partial) and PBI-22 (To do). No external feedback. |
+| Sprint Retrospective | 2026-11-18, on Zoom and WeChat. See below. |
 
 ## Retrospective
 
-`[Fill in together.]`
+The team did the retrospective together. The list shows the team's shared view.
 
-- **One practice that worked:** `[ ]`
-- **One problem in the way of working:** `[ ]`
-- **One specific improvement for the next sprint:** `[ ]`
+- **One practice that worked:** We marked an item Done only when a named test or evaluation result supported it. So we kept PBI-21 as Partial, although its unit tests pass, because no real Groq run used the retry.
+- **One problem in the way of working:** Most of the work was still finished late. The page, the MCP server and client, and the tests were merged on 2026-11-15, and the local Qwen run and the Colab check were done on 2026-11-18, the last day of the sprint.
+- **One specific improvement for the next sprint:** At Sprint Planning, give each task an owner, an estimate, and a due date, and merge each item as its own reviewed pull request by that date.
 
-Sprint 1 improvement to check: "split the work into tasks with dates at Sprint Planning". `[Did we do it? What happened?]`
+Sprint 1 improvement to check: "split the work into tasks with dates at Sprint Planning". We did it only in part. We split the work into tasks with owners and estimates, about 8 story points for each person, but we did not set due dates. As a result, the work was still concentrated at the end of the sprint.
